@@ -8,3 +8,4 @@
  */
 
 rootProject.name = 'kotlin-kafka-examples'
+include 'kafka-reactive-sender', 'kafka-reactive-consumer'
