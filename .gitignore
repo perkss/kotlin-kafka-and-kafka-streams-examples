@@ -1,11 +1,9 @@
 *.iml
+.gradle
 /local.properties
 /.idea
 .DS_Store
 /build
 /captures
-/out/
-/build/
-.gradle
-gradle-app.setting
-.gradletasknamecache
+gradlew
+gradlew.bat
