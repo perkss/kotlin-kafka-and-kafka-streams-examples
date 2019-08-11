@@ -1,13 +1,23 @@
 package com.perkss.kafka.reactive.config
 
+import com.perkss.kafka.reactive.KafkaReactiveConsumer
+import com.perkss.kafka.reactive.KafkaReactiveProducer
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.boot.CommandLineRunner
-import org.springframework.stereotype.Component
 
 
+@EnableConfigurationProperties(ReactiveKafkaAppProperties::class)
 @Configuration
-open class AppConfig {
+class AppConfig {
 
+    @Bean
+    fun reactiveProducer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
+            KafkaReactiveProducer(propertiesReactiveKafka.bootstrapServers)
+
+    @Bean
+    fun reactiveConsumer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
+            KafkaReactiveConsumer(propertiesReactiveKafka.bootstrapServers, propertiesReactiveKafka.inputTopic)
 
 
 }

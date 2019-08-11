@@ -2,6 +2,7 @@ package com.perkss.kafka.reactive
 
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -15,17 +16,17 @@ class KafkaReactiveApp : CommandLineRunner {
         private val logger = LoggerFactory.getLogger(KafkaReactiveApp::class.java)
     }
 
+    @Autowired
+    private lateinit var consumer: KafkaReactiveConsumer
+
+    @Autowired
+    private lateinit var producer: KafkaReactiveProducer
+
     override fun run(vararg args: String) {
 
         logger.info("Running Kafka Reactive App: Uppercase Topology")
 
-        val bootstrapServers = "localhost:9092"
-        val topic = "lowercase-topic"
         val outputTopic = "uppercase-topic"
-
-        val producer = KafkaReactiveProducer(bootstrapServers)
-
-        val consumer = KafkaReactiveConsumer(bootstrapServers, topic)
 
         consumer.consume()
                 .map {
