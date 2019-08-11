@@ -10,6 +10,7 @@ Start up Kafka and Zookeeper:
 Create the required topic in Kafka:
 
 `docker exec reactive-kafka-example-broker kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic lowercase-topic`
+
 `docker exec reactive-kafka-example-broker kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic uppercase-topic`
 
 Check the topic was created:
