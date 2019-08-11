@@ -6,6 +6,7 @@
 /captures
 /out/
 /build/
+/target/
 .gradle
 gradle-app.setting
 .gradletasknamecache

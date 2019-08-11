@@ -2,9 +2,7 @@ package com.perkss.kafka.reactive
 
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.IntegerDeserializer
-import org.apache.kafka.common.serialization.IntegerSerializer
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.kafka.receiver.KafkaReceiver
@@ -13,7 +11,7 @@ import reactor.kafka.receiver.ReceiverRecord
 import java.util.*
 
 class KafkaReactiveConsumer(bootstrapServers: String,
-                            private val topic: String) {
+                            topic: String) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveConsumer::class.java)
@@ -35,7 +33,7 @@ class KafkaReactiveConsumer(bootstrapServers: String,
 
     fun consume() =
             inboundFlux.subscribe {
-                logger.info("Received message: %s\n", it)
+                logger.info("Received message: {}", it)
                 it.receiverOffset().acknowledge() // TODO is both required.
                 it.receiverOffset().commit() }
 

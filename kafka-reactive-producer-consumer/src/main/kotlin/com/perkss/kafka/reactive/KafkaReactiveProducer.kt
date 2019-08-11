@@ -5,7 +5,6 @@ import org.apache.kafka.common.serialization.IntegerSerializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.Flux
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderOptions
 import reactor.kafka.sender.SenderRecord
@@ -32,7 +31,7 @@ class KafkaReactiveProducer(bootstrapServers: String) {
     fun send(outboundFlux: Publisher<SenderRecord<Int, String, Int>>) {
         sender.send(outboundFlux)
                 .doOnError { e -> logger.error("Send failed", e) }
-                .doOnNext { r -> logger.info("Message #%d send response: %s\n", r.correlationMetadata(), r.recordMetadata()) }
+                .doOnNext { r -> logger.info("Message {} send response: {}", r.correlationMetadata(), r.recordMetadata()) }
                 .subscribe()
     }
 }
