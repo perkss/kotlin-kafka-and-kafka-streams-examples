@@ -1,4 +1,4 @@
-# kotlin-kafka-examples
+# Reactive Kotlin Kafka Examples
 Kafka and Kafka Stream Examples in Kotlin with Project Reactor Kafka
 
 
