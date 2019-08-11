@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import reactor.core.publisher.Mono
 import reactor.kafka.sender.SenderRecord
-import reactor.core.publisher.Flux
 
 @SpringBootApplication
 class KafkaReactiveApp : CommandLineRunner {
@@ -17,21 +17,32 @@ class KafkaReactiveApp : CommandLineRunner {
 
     override fun run(vararg args: String) {
 
-        logger.info("Running Kafka Reactive App")
+        logger.info("Running Kafka Reactive App: Uppercase Topology")
 
         val bootstrapServers = "localhost:9092"
-        val topic = "test-topic"
+        val topic = "lowercase-topic"
+        val outputTopic = "uppercase-topic"
 
-        val outboundFlux = Flux.range(1, 10)
-                .map { i -> SenderRecord.create(ProducerRecord( topic, i, "Message_" + i!!), i) }
-
-        // val producer = KafkaReactiveProducer(bootstrapServers)
-
-        //  producer.send(outboundFlux)
+        val producer = KafkaReactiveProducer(bootstrapServers)
 
         val consumer = KafkaReactiveConsumer(bootstrapServers, topic)
 
         consumer.consume()
+                .map {
+                    logger.info("Received message: {}", it)
+                    it.receiverOffset().acknowledge() // TODO is both required.
+                    it.receiverOffset().commit()
+                    it
+                }
+                .map {
+                    val producerRecord = ProducerRecord(outputTopic, it.key(), it.value().toUpperCase())
+                    SenderRecord.create(producerRecord, it.key())
+                }
+                .map { producer.send(Mono.just(it)) }
+                .doOnError { logger.error("An error has occurred {}", it) }
+                .subscribe {
+                    logger.info("Subscribing to Consumer and Producer")
+                }
     }
 
 }
