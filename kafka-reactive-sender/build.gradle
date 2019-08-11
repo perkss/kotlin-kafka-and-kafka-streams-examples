@@ -1,3 +1,0 @@
-apply plugin: 'application'
-
-mainClassName = 'com.perkss.stuart.kafka.example.SampleProducer'
