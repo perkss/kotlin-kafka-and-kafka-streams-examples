@@ -7,6 +7,8 @@ Please use the docker-compose file in the root of the project to create the Kafk
 and a Zookeeper instance `reactive-kafka-example-zookeeper`
 
 ## Kafka Reactive Producer Consumer
+Please check the directory README for details how to run this example.
+
 This example shows how you can use the reactive API to build a consumer from a `lowercase-topic` map the data and output it
 with the same key to a `uppercase-topic` with the data converted to uppercase. Please check the sub module README for 
 how to execute this. Its a very interesting yet simple example, as you can see when the consume is lazily instantiated when 
