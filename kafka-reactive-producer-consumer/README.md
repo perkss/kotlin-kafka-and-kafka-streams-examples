@@ -1,7 +1,7 @@
 # Kafka Reactive Producer Consumer Example
 
 ## Check the TestContainers Test
-To quickly run the application without any setup you just need a running Docker process. This test will fire up a Kafka Container,
+To quickly run the application without any setup. This test will fire up a Kafka Container,
 and then the topology as a spring boot application, push a message on the `lowercase-topic`, process it
 in the topology to uppercase and output it to the `uppercase-topic`
 

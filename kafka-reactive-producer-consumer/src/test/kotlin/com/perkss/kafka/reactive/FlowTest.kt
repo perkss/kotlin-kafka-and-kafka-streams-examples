@@ -5,7 +5,6 @@ import com.perkss.kafka.reactive.config.ReactiveKafkaAppProperties
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,13 +42,11 @@ class FlowTest {
         internal fun beforeAll() {
             kafkaContainer = KafkaContainer("5.3.1")
             kafkaContainer.start()
-            await().until { kafkaContainer.isRunning }
         }
     }
 
     @Test
     fun `Sends a lowercase input string and then the topology converts it to uppercase string and outputs`() {
-
         val testConsumer = KafkaReactiveConsumer(
                 kafkaContainer.bootstrapServers,
                 reactiveKafkaAppProperties.outputTopic,
@@ -69,11 +66,19 @@ class FlowTest {
 
         val consumerGroups = adminClient.describeConsumerGroups(listOf(reactiveKafkaAppProperties.consumerGroupId))
 
-
         // send example message to topology
         kafkaReactiveProducer.send(
                 Mono.just(SenderRecord.create(producerRecord, key)))
                 .blockFirst()
+
+        println("Awaiting for consumer group of topology to be ready")
+//        await().atLeast(60, TimeUnit.SECONDS).until {
+//            println(consumerGroups.describedGroups()[reactiveKafkaAppProperties.consumerGroupId]!!.get().state())
+//            consumerGroups.describedGroups()[reactiveKafkaAppProperties.consumerGroupId]!!.get().state() === ConsumerGroupState.STABLE
+//        }
+
+
+        println("Its ready for consumer group of topology to be ready")
 
         testConsumer.consume()
                 .test()
