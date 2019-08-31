@@ -6,4 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 class ReactiveKafkaAppProperties {
     lateinit var bootstrapServers: String
     lateinit var inputTopic: String
+    lateinit var outputTopic: String
+    lateinit var consumerGroupId: String
 }

@@ -50,7 +50,9 @@ docker exec kafka1 kafka-console-consumer --bootstrap-server kafka1:29093 --topi
 
 ### TLS Security (Do It yourself)
 
-Some pre reading to discuss difference between truststore (used to store public certificates) and keystore (used to store private certificates) [here](https://www.tutorialspoint.com/listtutorial/Difference-between-keystore-and-truststore-in-Java-SSL/4237)
+Some pre reading to discuss difference between truststore (used to store public certificates) and keystore (used to store private certificates) [here](https://www.tutorialspoint.com/listtutorial/Difference-between-keystore-and-truststore-in-Java-SSL/4237) and also
+[confluents](https://docs.confluent.io/current/security/security_tutorial.html#generating-keys-certs) generating keys and [authentication](https://docs.confluent.io/current/kafka/authentication_ssl.html).
+The keystore stores each machine’s own identity. The truststore stores all the certificates that the machine should trust.
 
 #### Generate Keystore
 

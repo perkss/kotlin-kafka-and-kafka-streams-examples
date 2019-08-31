@@ -17,7 +17,10 @@ class AppConfig {
 
     @Bean
     fun reactiveConsumer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
-            KafkaReactiveConsumer(propertiesReactiveKafka.bootstrapServers, propertiesReactiveKafka.inputTopic)
+            KafkaReactiveConsumer(
+                    propertiesReactiveKafka.bootstrapServers,
+                    propertiesReactiveKafka.inputTopic,
+                    propertiesReactiveKafka.consumerGroupId)
 
 
 }
