@@ -13,3 +13,8 @@ This example shows how you can use the reactive API to build a consumer from a `
 with the same key to a `uppercase-topic` with the data converted to uppercase. Please check the sub module README for 
 how to execute this. Its a very interesting yet simple example, as you can see when the consume is lazily instantiated when 
 it connects and then once a message is received it lazily instantiates the producer to send on.
+
+## Kafka Reactive Secure Producer Consumer
+
+Shows how you can run a secured broker cluster using TLS and a applicaiton that will will consume and produce with this secure 
+transport layer to the brokers. Details can be found in the sub folder README.

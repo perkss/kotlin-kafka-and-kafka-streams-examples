@@ -31,7 +31,7 @@ class KafkaReactiveApp : CommandLineRunner {
         consumer.consume()
                 .map {
                     logger.info("Received message: {}", it)
-                    it.receiverOffset().acknowledge() // TODO is both required.
+                    it.receiverOffset().acknowledge()
                     it.receiverOffset().commit()
                     it
                 }
@@ -48,7 +48,7 @@ class KafkaReactiveApp : CommandLineRunner {
 
 }
 
-fun main(args : Array<String>) {
+fun main(args: Array<String>) {
     runApplication<KafkaReactiveApp>(*args)
 }
 
