@@ -12,6 +12,12 @@ Change back up a directory `../` and run the `docker-compose up -d` in detached 
 Once this is up and running you can check the logs by running `docker-compose logs kafka-ssl-1` for example to check the first 
 broker logs. 
 
+WOrk out why it has to be local host
+
+```shell script
+docker exec secure-broker-1 kafka-topics --create --zookeeper localhost:22181 --replication-factor 1 --partitions 1 --topic lowercase-topic
+```
+
 #### Console Producing to the cluster numerous ways
 ```shell script
 docker run \

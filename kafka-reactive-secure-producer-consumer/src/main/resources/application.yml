@@ -1,0 +1,8 @@
+perkss:
+  kafka:
+    example:
+      bootstrap-servers: "localhost:9093" # try different variations, provide all, and provide docker names
+      input-topic: "lowercase-topic"
+
+
+      # different ports for SSL and Non SSL
