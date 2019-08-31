@@ -13,3 +13,4 @@ dependency-reduced-pom.xml
 buildNumber.propertiesReactiveKafka
 .mvn/timing.propertiesReactiveKafka
 .mvn/wrapper/maven-wrapper.jar
+/.gradle/
