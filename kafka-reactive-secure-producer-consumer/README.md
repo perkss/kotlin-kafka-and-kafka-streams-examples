@@ -1,4 +1,38 @@
-## TLS Security
+## Kafka Reactive Secure Producer and Consumer Application
+
+### Getting started via Script
+Good you found your self the documentation for the secure cluster and producer and consumer application very important stuff.
+
+To create the required keys and truststores a handy script has been provided credit to confluent as based on their script.
+
+Change into the `secrets` directory and run `./create-certs` enter `yes`
+a few times are you are ready. 
+
+Change back up a directory `../` and run the `docker-compose up -d` in detached mode or you can check the logs output. 
+Once this is up and running you can check the logs by running `docker-compose logs kafka-ssl-1` for example to check the first 
+broker logs. 
+
+#### Console Producing to the cluster numerous ways
+```shell script
+docker run \
+  --net=host \
+  --rm \
+  -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets \
+  confluentinc/cp-kafka:latest \
+  bash -c "seq 42 | kafka-console-producer --broker-list localhost:29092 --topic bar -producer.config /etc/kafka/secrets/host.producer.ssl.config"
+```
+
+#### Console Consuming from the cluster numerous ways
+```shell script
+  docker run \
+  --net=host \
+  --rm \
+  -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets \
+  confluentinc/cp-kafka:latest \
+  kafka-console-consumer --bootstrap-server localhost:19092 --topic bar --from-beginning --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
+```
+
+### TLS Security (Do It yourself)
 
 Some pre reading to discuss difference between truststore (used to store public certificates) and keystore (used to store private certificates) [here](https://www.tutorialspoint.com/listtutorial/Difference-between-keystore-and-truststore-in-Java-SSL/4237)
 
@@ -57,7 +91,10 @@ Now the private key is signed from the keystore we need to import it again and t
  You will need to generate the files for the broker communication and then can specify there location with the provided 
  environment variable at run time. 
  
- https://docs.confluent.io/5.0.0/installation/docker/docs/installation/clustered-deployment-ssl.html
+ 
+ ### Useful Links
+ 
+ * [Handy plain docker](https://docs.confluent.io/5.0.0/installation/docker/docs/installation/clustered-deployment-ssl.html)
  
 
 

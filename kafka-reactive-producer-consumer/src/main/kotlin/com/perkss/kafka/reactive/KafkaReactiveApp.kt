@@ -24,8 +24,6 @@ class KafkaReactiveApp : CommandLineRunner {
 
     override fun run(vararg args: String) {
 
-        // TODO secure this is TLS
-
         logger.info("Running Kafka Reactive App: Uppercase Topology")
 
         val outputTopic = "uppercase-topic"
@@ -33,7 +31,7 @@ class KafkaReactiveApp : CommandLineRunner {
         consumer.consume()
                 .map {
                     logger.info("Received message: {}", it)
-                    it.receiverOffset().acknowledge() // TODO is both required.
+                    it.receiverOffset().acknowledge()
                     it.receiverOffset().commit()
                     it
                 }
