@@ -47,12 +47,8 @@ services:
     hostname: kafka1
     container_name: kafka1
     ports:
-      - "29092:29092"
-      - "9092:9092"
       - "29093:29093"
       - "9093:9093"
-      - "29094:29094"
-      - "9094:9094"
     depends_on:
       - zookeeper1
       - zookeeper2
@@ -60,8 +56,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,SSL:SSL,SSL_HOST:SSL
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092,SSL://kafka1:29093,SSL_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,SSL_HOST:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka1:29093,SSL_HOST://localhost:9093
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker1.keystore.jks
       KAFKA_SSL_KEYSTORE_CREDENTIALS: broker1_keystore_creds
       KAFKA_SSL_KEY_CREDENTIALS: broker1_sslkey_creds
@@ -78,12 +74,8 @@ services:
     hostname: kafka2
     container_name: kafka2
     ports:
-      - "29095:29095"
-      - "9095:9095"
       - "29096:29096"
       - "9096:9096"
-      - "29097:29097"
-      - "9097:9097"
     depends_on:
       - zookeeper1
       - zookeeper2
@@ -91,8 +83,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper1:2181,zookeeper3:2182,zookeeper3:2183
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,SSL:SSL,SSL_HOST:SSL
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:29095,PLAINTEXT_HOST://localhost:9095,SSL://kafka2:29096,SSL_HOST://localhost:9096
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,SSL_HOST:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka2:29096,SSL_HOST://localhost:9096
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker2.keystore.jks
       KAFKA_SSL_KEYSTORE_CREDENTIALS: broker2_keystore_creds
       KAFKA_SSL_KEY_CREDENTIALS: broker2_sslkey_creds
@@ -109,12 +101,8 @@ services:
     hostname: kafka3
     container_name: kafka3
     ports:
-      - "29098:29098"
-      - "9098:9098"
       - "29099:29099"
       - "9099:9099"
-      - "29100:29100"
-      - "9100:9100"
     depends_on:
       - zookeeper1
       - zookeeper2
@@ -122,8 +110,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,SSL:SSL,SSL_HOST:SSL
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:29098,PLAINTEXT_HOST://localhost:9098,SSL://kafka3:29099,SSL_HOST://localhost:9099
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,SSL_HOST:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka3:29099,SSL_HOST://localhost:9099
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker3.keystore.jks
       KAFKA_SSL_KEYSTORE_CREDENTIALS: broker3_keystore_creds
       KAFKA_SSL_KEY_CREDENTIALS: broker3_sslkey_creds

@@ -19,7 +19,7 @@ docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --create -
 ```
 
 #### Starting the App
-Start the Spring Boot App `SecureKafkaReactiveApp` as usual. (Not we will DockerFile this soon)
+Start the Spring Boot App `SecureKafkaReactiveApp` as usual. (Note we will DockerFile this soon)
 
 Or if you are running on the host you can also just use the existing kafka container running and it will have access to the docker 
 network like so
@@ -32,11 +32,20 @@ Accessing from the local host with the `--net=host` network
 ```shell script
 docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets -it confluentinc/cp-kafka:latest  kafka-console-producer --broker-list localhost:9093,localhost:9096,localhost:9099 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
 ```
+Running from inside an existing container
+```shell script
+docker exec -it kafka1  kafka-console-producer --broker-list kafka1:29093,kafka2:29096,kafka3:29099 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
+```
 
 #### Console Consuming from the cluster securely
 Accessing from the local host with the `--net=host` network
 ```shell script
 docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets -it confluentinc/cp-kafka:latest  kafka-console-consumer --bootstrap-server localhost:9093 --topic uppercase-topic --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
+```
+
+Running from inside an existing container
+```shell script
+docker exec kafka1 kafka-console-consumer --bootstrap-server kafka1:29093 --topic uppercase-topic --property print.key=true --property key.separator="-" --from-beginning --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
 ```
 
 ### TLS Security (Do It yourself)

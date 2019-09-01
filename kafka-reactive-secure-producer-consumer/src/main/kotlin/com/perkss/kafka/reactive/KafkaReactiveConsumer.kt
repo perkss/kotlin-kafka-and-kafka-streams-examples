@@ -30,7 +30,7 @@ class KafkaReactiveConsumer(bootstrapServers: String,
 
         if (sslEnabled) {
             consumerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
-            // TODO properly property this
+            // TODO properly property this could DockerFile it and mount the secrets at runtime
             consumerProps["ssl.truststore.location"] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.truststore.jks"
             consumerProps["ssl.truststore.password"] = "my-test-password"
             consumerProps["ssl.keystore.location"] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.keystore.jks"
