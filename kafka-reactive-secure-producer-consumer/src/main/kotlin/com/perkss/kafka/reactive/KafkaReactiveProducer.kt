@@ -12,7 +12,7 @@ import reactor.kafka.sender.SenderRecord
 import java.util.*
 
 class KafkaReactiveProducer(bootstrapServers: String,
-                            sslEnabled: Boolean = true) {
+                            sslEnabled: Boolean) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveProducer::class.java)
@@ -44,7 +44,7 @@ class KafkaReactiveProducer(bootstrapServers: String,
     fun send(outboundFlux: Publisher<SenderRecord<String, String, String>>) {
         sender.send(outboundFlux)
                 .doOnError { e -> logger.error("Send failed", e) }
-                .doOnNext { r -> logger.info("Message Key {} send response: {}", r.correlationMetadata(), r.recordMetadata().topic()) }
+                .doOnNext { r -> logger.info("Message Key {} send response to TLS connected topic: {}", r.correlationMetadata(), r.recordMetadata().topic()) }
                 .subscribe()
     }
 }

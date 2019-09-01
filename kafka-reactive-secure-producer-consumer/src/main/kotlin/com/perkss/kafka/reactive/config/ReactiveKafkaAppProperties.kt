@@ -6,4 +6,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 class ReactiveKafkaAppProperties {
     lateinit var bootstrapServers: String
     lateinit var inputTopic: String
+    val sslEnabled: Boolean = true
 }

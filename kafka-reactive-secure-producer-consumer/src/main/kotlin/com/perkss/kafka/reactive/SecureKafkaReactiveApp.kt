@@ -24,7 +24,7 @@ class SecureKafkaReactiveApp : CommandLineRunner {
 
     override fun run(vararg args: String) {
 
-        logger.info("Running Kafka Reactive App: Uppercase Topology")
+        logger.info("Running Secured Kafka Reactive App: Uppercase Topology")
 
         val outputTopic = "uppercase-topic"
 

@@ -13,7 +13,7 @@ import java.util.*
 
 class KafkaReactiveConsumer(bootstrapServers: String,
                             topic: String,
-                            sslEnabled: Boolean = true) {
+                            sslEnabled: Boolean) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveConsumer::class.java)
@@ -44,7 +44,7 @@ class KafkaReactiveConsumer(bootstrapServers: String,
         receiver = KafkaReceiver.create<String, String>(consumerOptions)
                 .receive()
                 .map {
-                    logger.info("Received message: {}", it)
+                    logger.info("TLS: Received secure message: {}", it)
                     it.receiverOffset().acknowledge()
                     it.receiverOffset().commit()
                     it
