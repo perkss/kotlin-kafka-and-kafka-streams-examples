@@ -1,7 +1,7 @@
 perkss:
   kafka:
     example:
-      bootstrap-servers: "localhost:9093" # try different variations, provide all, and provide docker names
+      bootstrap-servers: "localhost:9093,localhost:9094,localhost:9095" # try different variations, provide all, and provide docker names
       input-topic: "lowercase-topic"
 
 

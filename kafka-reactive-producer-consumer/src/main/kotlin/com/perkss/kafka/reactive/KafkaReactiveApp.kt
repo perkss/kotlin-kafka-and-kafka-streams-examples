@@ -30,12 +30,6 @@ class KafkaReactiveApp : CommandLineRunner {
 
         consumer.consume()
                 .map {
-                    logger.info("Received message: {}", it)
-                    it.receiverOffset().acknowledge()
-                    it.receiverOffset().commit()
-                    it
-                }
-                .map {
                     val producerRecord = ProducerRecord(outputTopic, it.key(), it.value().toUpperCase())
                     SenderRecord.create(producerRecord, it.key())
                 }

@@ -12,30 +12,31 @@ Change back up a directory `../` and run the `docker-compose up -d` in detached 
 Once this is up and running you can check the logs by running `docker-compose logs kafka-ssl-1` for example to check the first 
 broker logs. 
 
-WOrk out why it has to be local host
-
+#### Creating the topic
+Bringing down a container locally and running on a localhost of the box.
 ```shell script
-docker exec secure-broker-1 kafka-topics --create --zookeeper localhost:22181 --replication-factor 1 --partitions 1 --topic lowercase-topic
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --create --zookeeper localhost:2181 --replication-factor 3 --partitions 3 --topic lowercase-topic
 ```
 
-#### Console Producing to the cluster numerous ways
+#### Starting the App
+Start the Spring Boot App `SecureKafkaReactiveApp` as usual. (Not we will DockerFile this soon)
+
+Or if you are running on the host you can also just use the existing kafka container running and it will have access to the docker 
+network like so
 ```shell script
-docker run \
-  --net=host \
-  --rm \
-  -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets \
-  confluentinc/cp-kafka:latest \
-  bash -c "seq 42 | kafka-console-producer --broker-list localhost:29092 --topic bar -producer.config /etc/kafka/secrets/host.producer.ssl.config"
+docker exec kafka1 kafka-topics --create --zookeeper zookeeper1:2181 --replication-factor 3 --partitions 3 --topic lowercase-topic
 ```
 
-#### Console Consuming from the cluster numerous ways
+#### Console Producing to the cluster securely
+Accessing from the local host with the `--net=host` network
 ```shell script
-  docker run \
-  --net=host \
-  --rm \
-  -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets \
-  confluentinc/cp-kafka:latest \
-  kafka-console-consumer --bootstrap-server localhost:19092 --topic bar --from-beginning --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
+docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets -it confluentinc/cp-kafka:latest  kafka-console-producer --broker-list localhost:9093,localhost:9096,localhost:9099 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
+```
+
+#### Console Consuming from the cluster securely
+Accessing from the local host with the `--net=host` network
+```shell script
+docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets -it confluentinc/cp-kafka:latest  kafka-console-consumer --bootstrap-server localhost:9093 --topic uppercase-topic --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
 ```
 
 ### TLS Security (Do It yourself)

@@ -25,7 +25,6 @@ class KafkaReactiveProducer(bootstrapServers: String,
         producerProps[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
         producerProps[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         producerProps[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        producerProps["security.protocol"] = "PLAINTEXT"
 
         if (sslEnabled) {
             producerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"

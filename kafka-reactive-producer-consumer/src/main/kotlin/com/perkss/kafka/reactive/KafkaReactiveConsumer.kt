@@ -28,6 +28,12 @@ class KafkaReactiveConsumer(bootstrapServers: String,
 
         receiver = KafkaReceiver.create<String, String>(consumerOptions)
                 .receive()
+                .map {
+                    logger.info("Received message: {}", it)
+                    it.receiverOffset().acknowledge()
+                    it.receiverOffset().commit()
+                    it
+                }
     }
 
     fun consume() = receiver

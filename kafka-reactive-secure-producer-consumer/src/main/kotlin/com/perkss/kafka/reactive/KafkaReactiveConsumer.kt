@@ -27,10 +27,10 @@ class KafkaReactiveConsumer(bootstrapServers: String,
         consumerProps[ConsumerConfig.GROUP_ID_CONFIG] = "sample-group"
         consumerProps[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        // consumerProps["security.protocol"] = "PLAINTEXT"
 
         if (sslEnabled) {
             consumerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
+            // TODO properly property this
             consumerProps["ssl.truststore.location"] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.truststore.jks"
             consumerProps["ssl.truststore.password"] = "my-test-password"
             consumerProps["ssl.keystore.location"] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.keystore.jks"
@@ -39,11 +39,16 @@ class KafkaReactiveConsumer(bootstrapServers: String,
             consumerProps[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = " "
         }
 
-
         val consumerOptions = ReceiverOptions.create<String, String>(consumerProps).subscription(Collections.singleton(topic))
 
         receiver = KafkaReceiver.create<String, String>(consumerOptions)
                 .receive()
+                .map {
+                    logger.info("Received message: {}", it)
+                    it.receiverOffset().acknowledge()
+                    it.receiverOffset().commit()
+                    it
+                }
     }
 
     fun consume() = receiver
