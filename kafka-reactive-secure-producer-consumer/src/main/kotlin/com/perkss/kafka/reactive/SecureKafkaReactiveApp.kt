@@ -10,10 +10,10 @@ import reactor.core.publisher.Mono
 import reactor.kafka.sender.SenderRecord
 
 @SpringBootApplication
-class KafkaReactiveApp : CommandLineRunner {
+class SecureKafkaReactiveApp : CommandLineRunner {
 
     companion object {
-        private val logger = LoggerFactory.getLogger(KafkaReactiveApp::class.java)
+        private val logger = LoggerFactory.getLogger(SecureKafkaReactiveApp::class.java)
     }
 
     @Autowired
@@ -24,7 +24,7 @@ class KafkaReactiveApp : CommandLineRunner {
 
     override fun run(vararg args: String) {
 
-        logger.info("Running Kafka Reactive App: Uppercase Topology")
+        logger.info("Running Secured Kafka Reactive App: Uppercase Topology")
 
         val outputTopic = "uppercase-topic"
 
@@ -43,7 +43,7 @@ class KafkaReactiveApp : CommandLineRunner {
 }
 
 fun main(args: Array<String>) {
-    runApplication<KafkaReactiveApp>(*args)
+    runApplication<SecureKafkaReactiveApp>(*args)
 }
 
 

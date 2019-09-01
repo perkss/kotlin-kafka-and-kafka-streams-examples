@@ -1,55 +1,63 @@
 version: '2'
 services:
-  zookeeper-1:
+  zookeeper1:
     image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper1
+    container_name: reactive-kafka-example-zookeeper1
+    ports:
+      - "2181:2181"
     environment:
       ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_CLIENT_PORT: 22181
+      ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
-    network_mode: host
-    extra_hosts:
-      - "moby:127.0.0.1"
+      ZOOKEEPER_SERVERS: zookeeper1:22888:23888;zookeeper2:32888:33888;zookeeper3:42888:43888
 
-  zookeeper-2:
+  zookeeper2:
     image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper2
+    container_name: reactive-kafka-example-zookeeper2
+    ports:
+      - "2182:2182"
     environment:
       ZOOKEEPER_SERVER_ID: 2
-      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_CLIENT_PORT: 2182
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
-    network_mode: host
-    extra_hosts:
-      - "moby:127.0.0.1"
+      ZOOKEEPER_SERVERS: zookeeper1:22888:23888;zookeeper2:32888:33888;zookeeper3:42888:43888
 
-  zookeeper-3:
+  zookeeper3:
     image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper3
+    container_name: reactive-kafka-example-zookeeper3
+    ports:
+      - "2183:2183"
     environment:
       ZOOKEEPER_SERVER_ID: 3
-      ZOOKEEPER_CLIENT_PORT: 42181
+      ZOOKEEPER_CLIENT_PORT: 2183
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
-      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
-    network_mode: host
-    extra_hosts:
-      - "moby:127.0.0.1"
+      ZOOKEEPER_SERVERS: zookeeper1:22888:23888;zookeeper2:32888:33888;zookeeper3:42888:43888
 
-  kafka-ssl-1:
+  kafka1:
     image: confluentinc/cp-kafka:latest
-    network_mode: host
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "29093:29093"
+      - "9093:9093"
     depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
-      KAFKA_ADVERTISED_LISTENERS: SSL://localhost:19092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,SSL_HOST:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka1:29093,SSL_HOST://localhost:9093
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker1.keystore.jks
       KAFKA_SSL_KEYSTORE_CREDENTIALS: broker1_keystore_creds
       KAFKA_SSL_KEY_CREDENTIALS: broker1_sslkey_creds
@@ -60,20 +68,23 @@ services:
       KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SSL
     volumes:
       - ./secrets:/etc/kafka/secrets
-    extra_hosts:
-      - "moby:127.0.0.1"
 
-  kafka-ssl-2:
+  kafka2:
     image: confluentinc/cp-kafka:latest
-    network_mode: host
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "29096:29096"
+      - "9096:9096"
     depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
     environment:
       KAFKA_BROKER_ID: 2
-      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
-      KAFKA_ADVERTISED_LISTENERS: SSL://localhost:29092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper1:2181,zookeeper3:2182,zookeeper3:2183
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,SSL_HOST:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka2:29096,SSL_HOST://localhost:9096
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker2.keystore.jks
       KAFKA_SSL_KEYSTORE_CREDENTIALS: broker2_keystore_creds
       KAFKA_SSL_KEY_CREDENTIALS: broker2_sslkey_creds
@@ -84,20 +95,23 @@ services:
       KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SSL
     volumes:
       - ./secrets:/etc/kafka/secrets
-    extra_hosts:
-      - "moby:127.0.0.1"
 
-  kafka-ssl-3:
+  kafka3:
     image: confluentinc/cp-kafka:latest
-    network_mode: host
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "29099:29099"
+      - "9099:9099"
     depends_on:
-      - zookeeper-1
-      - zookeeper-2
-      - zookeeper-3
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
     environment:
       KAFKA_BROKER_ID: 3
-      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
-      KAFKA_ADVERTISED_LISTENERS: SSL://localhost:39092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper1:2181,zookeeper2:2182,zookeeper3:2183
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,SSL_HOST:SSL
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka3:29099,SSL_HOST://localhost:9099
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.broker3.keystore.jks
       KAFKA_SSL_KEYSTORE_CREDENTIALS: broker3_keystore_creds
       KAFKA_SSL_KEY_CREDENTIALS: broker3_sslkey_creds
@@ -108,5 +122,3 @@ services:
       KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SSL
     volumes:
       - ./secrets:/etc/kafka/secrets
-    extra_hosts:
-      - "moby:127.0.0.1"
