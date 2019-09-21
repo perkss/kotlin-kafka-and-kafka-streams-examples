@@ -33,7 +33,6 @@ class KafkaReactiveConsumer(bootstrapServers: String,
                 .receive()
                 .map {
                     logger.info("Received message: $it")
-                    it.receiverOffset().acknowledge()
                     it.receiverOffset().commit()
                     it
                 }
