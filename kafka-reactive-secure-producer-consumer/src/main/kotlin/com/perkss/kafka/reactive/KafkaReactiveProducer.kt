@@ -12,7 +12,8 @@ import reactor.kafka.sender.SenderRecord
 import java.util.*
 
 class KafkaReactiveProducer(bootstrapServers: String,
-                            sslEnabled: Boolean) {
+                            sslEnabled: Boolean,
+                            saslEnabled: Boolean) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveProducer::class.java)
@@ -34,6 +35,14 @@ class KafkaReactiveProducer(bootstrapServers: String,
             producerProps[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = "my-test-password"
             producerProps[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = "my-test-password"
             producerProps[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = " "
+        }
+
+        if (saslEnabled) {
+            producerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
+            producerProps["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required \n" +
+                    "  username=\"client\" \n" +
+                    "  password=\"client-secret\";"
+            producerProps["sasl.mechanism"] = "PLAIN"
         }
 
         val senderOptions = SenderOptions.create<String, String>(producerProps).maxInFlight(1024)

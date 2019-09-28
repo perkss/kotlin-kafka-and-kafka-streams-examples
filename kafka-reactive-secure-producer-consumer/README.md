@@ -14,8 +14,17 @@ broker logs.
 
 #### Creating the topic
 Bringing down a container locally and running on a localhost of the box.
+
+This will no longer work as we need to have the zookeer_jaas.conf on the path. 
+
 ```shell script
 docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --create --zookeeper localhost:2181 --replication-factor 3 --partitions 3 --topic lowercase-topic
+```
+
+So we use the already running broker with the secrets to create the topic.
+
+```shell script
+ocker exec kafka1 kafka-topics --create --zookeeper zookeeper1:2181 --replication-factor 3 --partitions 3 --topic lowercase-topic
 ```
 
 #### Starting the App

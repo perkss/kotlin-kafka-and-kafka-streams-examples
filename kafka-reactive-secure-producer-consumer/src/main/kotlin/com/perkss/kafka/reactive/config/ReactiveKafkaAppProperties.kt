@@ -7,4 +7,5 @@ class ReactiveKafkaAppProperties {
     lateinit var bootstrapServers: String
     lateinit var inputTopic: String
     val sslEnabled: Boolean = true
+    val saslEnabled: Boolean = true
 }

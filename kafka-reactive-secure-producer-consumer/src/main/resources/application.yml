@@ -1,5 +1,5 @@
 perkss:
   kafka:
     example:
-      bootstrap-servers: "localhost:9093,localhost:9096,localhost:9099"
+      bootstrap-servers: "localhost:9094,localhost:9097,localhost:3000"
       input-topic: "lowercase-topic"

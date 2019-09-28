@@ -5,10 +5,13 @@ import com.perkss.kafka.reactive.config.ReactiveKafkaAppProperties
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.test.context.ContextConfiguration
@@ -29,12 +32,19 @@ import kotlin.test.assertEquals
 class FlowTest {
 
     @Autowired
+    private lateinit var applicationContext: ApplicationContext
+
+    @Autowired
     private lateinit var kafkaReactiveProducer: KafkaReactiveProducer
+
+    @Autowired
+    private lateinit var kafkaReactiveConsumer: KafkaReactiveConsumer
 
     @Autowired
     private lateinit var reactiveKafkaAppProperties: ReactiveKafkaAppProperties
 
     companion object {
+        private val logger = LoggerFactory.getLogger(FlowTest::class.java)
         lateinit var kafkaContainer: KafkaContainer
 
         @BeforeAll
@@ -42,11 +52,15 @@ class FlowTest {
         internal fun beforeAll() {
             kafkaContainer = KafkaContainer("5.3.1")
             kafkaContainer.start()
+            await().until { kafkaContainer.isRunning }
         }
     }
 
     @Test
     fun `Sends a lowercase input string and then the topology converts it to uppercase string and outputs`() {
+
+        await().until { applicationContext.getBean(KafkaReactiveConsumer::class.java) != null }
+
         val testConsumer = KafkaReactiveConsumer(
                 kafkaContainer.bootstrapServers,
                 reactiveKafkaAppProperties.outputTopic,
@@ -65,6 +79,7 @@ class FlowTest {
         val adminClient = AdminClient.create(conf)
 
         val consumerGroups = adminClient.describeConsumerGroups(listOf(reactiveKafkaAppProperties.consumerGroupId))
+
 
         // send example message to topology
         kafkaReactiveProducer.send(
