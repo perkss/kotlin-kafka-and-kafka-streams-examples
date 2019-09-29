@@ -4,9 +4,11 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringSerializer
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
+import reactor.core.publisher.Flux
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderOptions
 import reactor.kafka.sender.SenderRecord
+import reactor.kafka.sender.SenderResult
 import java.util.*
 
 class KafkaReactiveProducer(bootstrapServers: String) {
@@ -27,10 +29,9 @@ class KafkaReactiveProducer(bootstrapServers: String) {
         sender = KafkaSender.create(senderOptions)
     }
 
-    fun send(outboundFlux: Publisher<SenderRecord<String, String, String>>) {
-        sender.send(outboundFlux)
+    fun send(outboundFlux: Publisher<SenderRecord<String, String, String>>): Flux<SenderResult<String>> {
+        return sender.send(outboundFlux)
                 .doOnError { e -> logger.error("Send failed", e) }
-                .doOnNext { r -> logger.info("Message Key {} send response: {}", r.correlationMetadata(), r.recordMetadata().topic()) }
-                .subscribe()
+                .doOnNext { r -> logger.info("Message Key ${r.correlationMetadata()} send response: ${r.recordMetadata().topic()}") }
     }
 }
