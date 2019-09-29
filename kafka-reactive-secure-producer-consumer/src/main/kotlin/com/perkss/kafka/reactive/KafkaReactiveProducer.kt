@@ -31,9 +31,6 @@ class KafkaReactiveProducer(bootstrapServers: String,
             producerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
             producerProps[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.producer.truststore.jks"
             producerProps[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = "my-test-password"
-            producerProps[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.producer.keystore.jks"
-            producerProps[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = "my-test-password"
-            producerProps[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = "my-test-password"
             producerProps[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = " "
         }
 

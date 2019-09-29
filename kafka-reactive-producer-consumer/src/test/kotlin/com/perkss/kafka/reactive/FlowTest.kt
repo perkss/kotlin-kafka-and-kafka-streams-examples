@@ -8,10 +8,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.test.context.ContextConfiguration
@@ -32,19 +30,12 @@ import kotlin.test.assertEquals
 class FlowTest {
 
     @Autowired
-    private lateinit var applicationContext: ApplicationContext
-
-    @Autowired
     private lateinit var kafkaReactiveProducer: KafkaReactiveProducer
-
-    @Autowired
-    private lateinit var kafkaReactiveConsumer: KafkaReactiveConsumer
 
     @Autowired
     private lateinit var reactiveKafkaAppProperties: ReactiveKafkaAppProperties
 
     companion object {
-        private val logger = LoggerFactory.getLogger(FlowTest::class.java)
         lateinit var kafkaContainer: KafkaContainer
 
         @BeforeAll
@@ -58,8 +49,6 @@ class FlowTest {
 
     @Test
     fun `Sends a lowercase input string and then the topology converts it to uppercase string and outputs`() {
-
-        await().until { applicationContext.getBean(KafkaReactiveConsumer::class.java) != null }
 
         val testConsumer = KafkaReactiveConsumer(
                 kafkaContainer.bootstrapServers,
@@ -85,15 +74,6 @@ class FlowTest {
         kafkaReactiveProducer.send(
                 Mono.just(SenderRecord.create(producerRecord, key)))
                 .blockFirst()
-
-        println("Awaiting for consumer group of topology to be ready")
-//        await().atLeast(60, TimeUnit.SECONDS).until {
-//            println(consumerGroups.describedGroups()[reactiveKafkaAppProperties.consumerGroupId]!!.get().state())
-//            consumerGroups.describedGroups()[reactiveKafkaAppProperties.consumerGroupId]!!.get().state() === ConsumerGroupState.STABLE
-//        }
-
-
-        println("Its ready for consumer group of topology to be ready")
 
         testConsumer.consume()
                 .test()

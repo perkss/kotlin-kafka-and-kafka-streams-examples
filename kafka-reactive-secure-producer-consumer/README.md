@@ -39,11 +39,11 @@ docker exec kafka1 kafka-topics --create --zookeeper zookeeper1:2181 --replicati
 #### Console Producing to the cluster securely
 Accessing from the local host with the `--net=host` network
 ```shell script
-docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets -it confluentinc/cp-kafka:latest  kafka-console-producer --broker-list localhost:9093,localhost:9096,localhost:9099 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
+docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets:/etc/kafka/secrets -it confluentinc/cp-kafka:latest  kafka-console-producer --broker-list localhost:9094,localhost:9097,localhost:10000 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
 ```
 Running from inside an existing container
 ```shell script
-docker exec -it kafka1  kafka-console-producer --broker-list kafka1:29093,kafka2:29096,kafka3:29099 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
+docker exec -it kafka1  kafka-console-producer --broker-list kafka1:29094,kafka2:29097,kafka3:30000 --topic lowercase-topic --property "parse.key=true" --property "key.separator=:" --producer.config /etc/kafka/secrets/host.producer.ssl.config
 ```
 
 #### Console Consuming from the cluster securely
@@ -54,7 +54,13 @@ docker run --net=host -v /Users/Stuart/Documents/Programming/kotlin/kotlin-kafka
 
 Running from inside an existing container
 ```shell script
-docker exec kafka1 kafka-console-consumer --bootstrap-server kafka1:29093 --topic uppercase-topic --property print.key=true --property key.separator="-" --from-beginning --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
+docker exec kafka1 kafka-console-consumer --bootstrap-server kafka1:29094 --topic uppercase-topic --property print.key=true --property key.separator="-" --from-beginning --consumer.config /etc/kafka/secrets/host.consumer.ssl.config
+```
+
+#### List consumers
+
+```shell script
+docker exec kafka1 kafka-consumer-groups  --list --bootstrap-server kafka1:29094 --command-config /etc/kafka/secrets/host.consumer.ssl.config
 ```
 
 ### TLS Security (Do It yourself)
