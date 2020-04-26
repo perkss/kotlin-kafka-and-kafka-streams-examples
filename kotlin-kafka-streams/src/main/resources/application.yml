@@ -1,0 +1,10 @@
+perkss:
+  kafka:
+    example:
+      bootstrap-servers: "localhost:9091,localhost:9092,localhost:9093"
+      stock-inventory: "stock"
+      customer-information: "customer"
+      order-request: "order-request"
+      output-topic: "order-processed"
+      application-id: "OrderProcessing"
+      state-dir: ""
