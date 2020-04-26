@@ -8,11 +8,14 @@ import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
 import reactor.kafka.receiver.ReceiverRecord
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class KafkaReactiveConsumer(bootstrapServers: String,
                             topic: String,
                             consumerGroupId: String,
                             autoOffsetReset: String = "earliest") {
+
+    val store = ConcurrentHashMap<String, MutableList<String>>()
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveConsumer::class.java)
@@ -29,7 +32,7 @@ class KafkaReactiveConsumer(bootstrapServers: String,
         consumerProps[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = autoOffsetReset
         val consumerOptions = ReceiverOptions.create<String, String>(consumerProps).subscription(Collections.singleton(topic))
 
-        receiver = KafkaReceiver.create<String, String>(consumerOptions)
+        receiver = KafkaReceiver.create(consumerOptions)
                 .receive()
                 .map {
                     logger.info("Received message: $it")
