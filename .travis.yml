@@ -1,0 +1,2 @@
+language: kotlin
+before_install: cd kotlin-kafka-streams
