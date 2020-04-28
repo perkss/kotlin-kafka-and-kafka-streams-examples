@@ -12,6 +12,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
+      KAFKA_JMX_PORT: 39999
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/zookeeper_jaas.conf
         -Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
       ZOOKEEPER_SERVERS: zookeeper1:22888:23888;zookeeper2:32888:33888;zookeeper3:42888:43888
@@ -30,6 +31,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
+      KAFKA_JMX_PORT: 39999
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/zookeeper_jaas.conf
         -Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
       ZOOKEEPER_SERVERS: zookeeper1:22888:23888;zookeeper2:32888:33888;zookeeper3:42888:43888
@@ -48,6 +50,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
+      KAFKA_JMX_PORT: 39999
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/zookeeper_jaas.conf
         -Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
       ZOOKEEPER_SERVERS: zookeeper1:22888:23888;zookeeper2:32888:33888;zookeeper3:42888:43888
@@ -85,6 +88,7 @@ services:
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/server_jaas.conf
       KAFKA_ZOOKEEPER_SET_ACL: "true"
+      KAFKA_JMX_PORT: 49999
     volumes:
       - ./secrets:/etc/kafka/secrets
 
@@ -119,6 +123,7 @@ services:
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/server_jaas.conf
       KAFKA_ZOOKEEPER_SET_ACL: "true" #stops topic creation deletion by anyone
+      KAFKA_JMX_PORT: 49999
     volumes:
       - ./secrets:/etc/kafka/secrets
 
@@ -153,5 +158,6 @@ services:
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/server_jaas.conf
       KAFKA_ZOOKEEPER_SET_ACL: "true"
+      KAFKA_JMX_PORT: 49999
     volumes:
       - ./secrets:/etc/kafka/secrets

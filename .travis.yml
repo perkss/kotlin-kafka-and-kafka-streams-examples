@@ -1,0 +1,5 @@
+language: kotlin
+before_install: cd kotlin-kafka-streams
+sudo: false # faster builds
+
+script: "mvn clean package"

@@ -20,5 +20,4 @@ class AppConfig {
             KafkaReactiveConsumer(propertiesReactiveKafka.bootstrapServers,
                     propertiesReactiveKafka.inputTopic, propertiesReactiveKafka.sslEnabled, propertiesReactiveKafka.saslEnabled)
 
-
 }

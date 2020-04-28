@@ -1,4 +1,4 @@
-# Reactive Kotlin Kafka Examples
+# Reactive Kotlin Kafka Examples && Kafka Streams with Kotlin
 Kafka and Kafka Stream Examples in Kotlin with Project Reactor Kafka
 
 
@@ -16,5 +16,7 @@ it connects and then once a message is received it lazily instantiates the produ
 
 ## Kafka Reactive Secure Producer Consumer
 
-Shows how you can run a secured broker cluster using TLS and a applicaiton that will will consume and produce with this secure 
+Shows how you can run a secured broker cluster using TLS and a application that will will consume and produce with this secure 
 transport layer to the brokers. Details can be found in the sub folder README.
+
+## Kafka Streams and Kotlin
