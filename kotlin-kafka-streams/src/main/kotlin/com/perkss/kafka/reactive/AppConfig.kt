@@ -1,9 +1,14 @@
 package com.perkss.kafka.reactive
 
+import com.perkss.kafka.reactive.OrderProcessingTopology.customer
+import com.perkss.kafka.reactive.OrderProcessingTopology.orderProcessing
+import com.perkss.kafka.reactive.OrderProcessingTopology.stock
 import com.perkss.order.model.OrderRequested
+import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -49,8 +54,10 @@ class AppConfig {
     @Bean
     fun customerTable(
             streamsBuilder: StreamsBuilder,
-            props: AppProperties): GlobalKTable<String, GenericRecord> =
-            customer(streamsBuilder, props)
+            props: AppProperties,
+            keySerde: Serde<String>,
+            valueSerde: GenericAvroSerde): GlobalKTable<String, GenericRecord> =
+            customer(streamsBuilder, props, keySerde, valueSerde)
 
     @Bean
     fun orderProcessingTopology(
