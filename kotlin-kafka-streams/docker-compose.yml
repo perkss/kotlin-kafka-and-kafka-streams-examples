@@ -105,3 +105,14 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29093,PLAINTEXT_HOST://localhost:9093
     extra_hosts:
       - "moby:127.0.0.1"
+
+  schemaregistry:
+    image: confluentinc/cp-schema-registry:latest
+    depends_on:
+      - zookeeper
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper-1:22181"
+      SCHEMA_REGISTRY_HOST_NAME: schemaregistry
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+    ports:
+      - 8081:8081

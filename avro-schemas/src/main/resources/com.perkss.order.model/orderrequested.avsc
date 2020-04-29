@@ -1,0 +1,21 @@
+{
+  "namespace": "com.perkss.order.model",
+  "type": "record",
+  "name": "OrderRequested",
+  "fields": [
+    {
+      "name": "id",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    },
+    {
+      "name": "product_id",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String"
+      }
+    }
+  ]
+}
