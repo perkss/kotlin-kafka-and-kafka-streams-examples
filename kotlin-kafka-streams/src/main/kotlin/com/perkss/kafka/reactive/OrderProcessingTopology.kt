@@ -28,8 +28,7 @@ object OrderProcessingTopology {
             streamsBuilder
                     .globalTable(props.customerInformation,
                             Consumed.with(keySerde, valueSerde), Materialized.`as`(props.customerInformation))
-
-
+    
     fun orderProcessing(streamConfig: Properties,
                         streamsBuilder: StreamsBuilder,
                         props: AppProperties,
