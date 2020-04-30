@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.perkss.kafka.reactive</groupId>
-    <artifactId>kotlin-kafka-streams</artifactId>
+    <artifactId>kotlin-kafka-streams-examples</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 

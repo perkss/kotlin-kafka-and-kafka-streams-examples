@@ -1,4 +1,4 @@
 language: kotlin
 jdk:
   - oraclejdk11
-script: cd avro-schemas && mvn install -Dmaven.compiler.target=11 -Dmaven.compiler.source=11 && cd ../kotlin-kafka-streams &&  mvn install -Dmaven.compiler.target=11 -Dmaven.compiler.source=11
+script: cd avro-schemas && mvn install -Dmaven.compiler.target=11 -Dmaven.compiler.source=11 && cd ../kotlin-kafka-streams-examples &&  mvn install -Dmaven.compiler.target=11 -Dmaven.compiler.source=11
