@@ -4,11 +4,11 @@ import com.perkss.kafka.reactive.OrderProcessingTopology.customer
 import com.perkss.kafka.reactive.OrderProcessingTopology.orderProcessing
 import com.perkss.kafka.reactive.OrderProcessingTopology.stock
 import com.perkss.order.model.OrderRequested
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -33,6 +33,7 @@ class AppConfig {
         val streamsConfiguration = Properties()
         streamsConfiguration[StreamsConfig.APPLICATION_ID_CONFIG] = props.applicationId
         streamsConfiguration[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = props.bootstrapServers
+        streamsConfiguration[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "http://0.0.0.0:8081"
 //        streamsConfiguration[StreamsConfig.STATE_DIR_CONFIG] = props.stateDir
         streamsConfiguration[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         streamsConfiguration[StreamsConfig.TOPOLOGY_OPTIMIZATION] = StreamsConfig.OPTIMIZE// do not create internal changelog have to have source topic as compact https://stackoverflow.com/questions/57164133/kafka-stream-topology-optimization
@@ -49,15 +50,16 @@ class AppConfig {
             props: AppProperties): KTable<String, String> =
             stock(streamsBuilder, props)
 
-
     // keyed by product ID
     @Bean
     fun customerTable(
             streamsBuilder: StreamsBuilder,
-            props: AppProperties,
-            keySerde: Serde<String>,
-            valueSerde: GenericAvroSerde): GlobalKTable<String, GenericRecord> =
-            customer(streamsBuilder, props, keySerde, valueSerde)
+            props: AppProperties): GlobalKTable<String, GenericRecord> =
+            customer(streamsBuilder, props, Serdes.String(), GenericAvroSerde().apply {
+                configure(mapOf(
+                        KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to "http://0.0.0.0:8081"
+                ), false) // TODO make bean
+            })
 
     @Bean
     fun orderProcessingTopology(
@@ -66,7 +68,11 @@ class AppConfig {
             props: AppProperties,
             customerTable: GlobalKTable<String, GenericRecord>,
             stockTable: KTable<String, String>): Topology {
-        return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(), SpecificAvroSerde<OrderRequested>())
+        return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(), SpecificAvroSerde<OrderRequested>().apply {
+            configure(mapOf(
+                    KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to "http://0.0.0.0:8081"
+            ), false)
+        })
     }
 
     @Bean

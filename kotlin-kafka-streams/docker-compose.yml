@@ -109,7 +109,7 @@ services:
   schemaregistry:
     image: confluentinc/cp-schema-registry:latest
     depends_on:
-      - zookeeper
+      - zookeeper-1
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper-1:22181"
       SCHEMA_REGISTRY_HOST_NAME: schemaregistry

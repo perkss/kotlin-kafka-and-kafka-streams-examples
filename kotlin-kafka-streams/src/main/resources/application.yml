@@ -5,6 +5,6 @@ perkss:
       stock-inventory: "stock"
       customer-information: "customer"
       order-request: "order-request"
-      output-topic: "order-processed"
+      order-processed-topic: "order-processed"
       application-id: "OrderProcessing"
-      state-dir: ""
+      state-dir: "./"
