@@ -59,6 +59,15 @@ docker run --rm  -it --net=host confluentinc/cp-schema-registry:latest kafka-avr
 ```shell script
 http://0.0.0.0:8081/subjects/order-request-value/versions/1
 ```
+You can consume the message written using the following console consumer that references the schema registry.
+
+```shell script
+docker run --rm  -it --net=host confluentinc/cp-schema-registry:latest kafka-avro-console-consumer --topic order-request --bootstrap-server localhost:9092 --property schema.registry.url="http://0.0.0.0:8081" --from-beginning
+```
+
+```shell script
+docker run --rm  -it --net=host confluentinc/cp-schema-registry:latest kafka-avro-console-consumer --topic customer --bootstrap-server localhost:9092 --property schema.registry.url="http://0.0.0.0:8081" --from-beginning
+```
 
 
 
