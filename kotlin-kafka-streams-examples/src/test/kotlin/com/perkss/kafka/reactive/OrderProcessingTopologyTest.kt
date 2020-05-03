@@ -6,7 +6,9 @@ import com.perkss.kafka.reactive.OrderProcessingTopology.stock
 import com.perkss.kafka.reactive.model.Customer
 import com.perkss.kafka.reactive.model.SchemaLoader
 import com.perkss.kafka.reactive.model.toGenericRecord
+import com.perkss.order.model.OrderConfirmed
 import com.perkss.order.model.OrderRequested
+import com.perkss.order.model.Stock
 import io.confluent.common.utils.TestUtils
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
@@ -48,6 +50,7 @@ class OrderProcessingTopologyTest {
         appProperties.stockInventory = "stock"
         appProperties.orderRequest = "order-request"
         appProperties.orderProcessedTopic = "order-processed"
+        appProperties.schemaRegistry = mockSchemaRegistryUrl
 
         val config = mapOf(
                 KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to mockSchemaRegistryUrl)
@@ -60,6 +63,8 @@ class OrderProcessingTopologyTest {
         val keySerde = Serdes.String()
         val valSerde = Serdes.String()
         val orderRequestSerde = SpecificAvroSerde<OrderRequested>(schemaRegistryClient)
+        val orderProcessedSerde = SpecificAvroSerde<OrderConfirmed>(schemaRegistryClient)
+        val stockSerde = SpecificAvroSerde<Stock>(schemaRegistryClient)
         val genericAvroSerde = GenericAvroSerde(schemaRegistryClient)
 
         // configure with schema registry
@@ -67,24 +72,27 @@ class OrderProcessingTopologyTest {
         valSerde.configure(config, false)
         orderRequestSerde.configure(config, false)
         genericAvroSerde.configure(config, false)
+        stockSerde.configure(config, false)
+        orderProcessedSerde.configure(config, false)
 
         val customer = customer(builder, appProperties, keySerde, genericAvroSerde)
 
         val stock = stock(builder, appProperties)
 
-        val topology = orderProcessing(props, builder, appProperties, customer, stock, keySerde, orderRequestSerde)
+        val topology = orderProcessing(props, builder, appProperties, customer, stock, keySerde, orderRequestSerde, orderProcessedSerde)
 
         val testDriver = TopologyTestDriver(topology, props)
         val orderId = "1234A"
         val productId = "12412"
-        val stockTopic = testDriver.createInputTopic(appProperties.stockInventory, keySerde.serializer(), valSerde.serializer())
-        stockTopic.pipeInput(productId, "stock-matched")
+        val customerId = "AAAAA"
+        val stockTopic = testDriver.createInputTopic(appProperties.stockInventory, keySerde.serializer(), stockSerde.serializer())
+        stockTopic.pipeInput(productId, Stock("AA", productId, 1))
 
         // Customer is populated with GenericAvroSerde customer details
         val customerTopic: TestInputTopic<String, GenericRecord> =
                 testDriver.createInputTopic(appProperties.customerInformation, Serdes.String().serializer(), genericAvroSerde.serializer())
 
-        val customerRecord = Customer("1234A", "perkss", "london")
+        val customerRecord = Customer(customerId, "perkss", "london")
                 .toGenericRecord(SchemaLoader.loadSchema())
 
         customerTopic.pipeKeyValueList(
@@ -92,10 +100,10 @@ class OrderProcessingTopologyTest {
                         KeyValue.pair(customerRecord.get("id") as String, customerRecord)))
 
         val inputTopic = testDriver.createInputTopic(appProperties.orderRequest, keySerde.serializer(), orderRequestSerde.serializer())
-        inputTopic.pipeInput(orderId, OrderRequested(orderId, productId))
+        inputTopic.pipeInput(orderId, OrderRequested(orderId, productId, customerId))
 
-        val outputTopic = testDriver.createOutputTopic(appProperties.orderProcessedTopic, keySerde.deserializer(), valSerde.deserializer())
-        assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(orderId, "perkss")))
+        val outputTopic = testDriver.createOutputTopic(appProperties.orderProcessedTopic, keySerde.deserializer(), orderProcessedSerde.deserializer())
+        assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(orderId, OrderConfirmed(orderId, productId, customerId, true))))
 
         testDriver.close()
         MockSchemaRegistry.dropScope(schemaRegistryScope)

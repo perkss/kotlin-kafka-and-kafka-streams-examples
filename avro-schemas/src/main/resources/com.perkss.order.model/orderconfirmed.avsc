@@ -1,8 +1,8 @@
 {
   "namespace": "com.perkss.order.model",
   "type": "record",
-  "name": "OrderRequested",
-  "doc": "Order requests that come into the system",
+  "name": "OrderConfirmed",
+  "doc": "Confirmation of an order has taken place",
   "fields": [
     {
       "name": "id",
@@ -20,6 +20,12 @@
       "name": "customer_id",
       "type": {
         "type": "string"
+      }
+    },
+    {
+      "name": "confirmed",
+      "type": {
+        "type": "boolean"
       }
     }
   ]

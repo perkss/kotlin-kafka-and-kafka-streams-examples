@@ -33,7 +33,7 @@
             <plugin>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro-maven-plugin</artifactId>
-                <version>1.9.2</version>
+                <version>${avro.version}</version>
                 <executions>
                     <execution>
                         <id>schemas</id>
@@ -44,6 +44,8 @@
                             <goal>idl-protocol</goal>
                         </goals>
                         <configuration>
+                            <fieldVisibility>PRIVATE</fieldVisibility>
+                            <createSetters>false</createSetters>
                             <stringType>String</stringType>
                             <sourceDirectory>src/main/resources/com.perkss.order.model</sourceDirectory>
                             <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>

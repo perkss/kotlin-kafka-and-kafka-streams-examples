@@ -1,8 +1,8 @@
 {
   "namespace": "com.perkss.order.model",
   "type": "record",
-  "name": "OrderRequested",
-  "doc": "Order requests that come into the system",
+  "name": "Stock",
+  "doc": "Warehouse stock",
   "fields": [
     {
       "name": "id",
@@ -16,11 +16,11 @@
         "type": "string"
       }
     },
-    {
-      "name": "customer_id",
+   {
+      "name": "quantity_available",
       "type": {
-        "type": "string"
+         "type": "int"
       }
-    }
+   }
   ]
 }

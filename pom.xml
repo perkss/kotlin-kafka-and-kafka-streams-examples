@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.perkss</groupId>
+    <artifactId>kotlin-kafka-examples</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>avro-schemas</module>
+        <module>kafka-reactive-producer-consumer</module>
+        <module>kafka-reactive-secure-producer-consumer</module>
+        <module>kotlin-kafka-streams-examples</module>
+    </modules>
+
+</project>

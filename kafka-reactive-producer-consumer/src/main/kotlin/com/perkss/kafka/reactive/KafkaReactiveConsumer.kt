@@ -8,20 +8,17 @@ import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
 import reactor.kafka.receiver.ReceiverRecord
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
-class KafkaReactiveConsumer(bootstrapServers: String,
-                            topic: String,
-                            consumerGroupId: String,
-                            autoOffsetReset: String = "earliest") {
-
-    val store = ConcurrentHashMap<String, MutableList<String>>()
+class KafkaReactiveConsumer<K, V>(bootstrapServers: String,
+                                  topic: String,
+                                  consumerGroupId: String,
+                                  autoOffsetReset: String = "earliest") {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveConsumer::class.java)
     }
 
-    private val receiver: Flux<ReceiverRecord<String, String>>
+    private val receiver: Flux<ReceiverRecord<K, V>>
 
     init {
         val consumerProps = Properties()
@@ -30,7 +27,7 @@ class KafkaReactiveConsumer(bootstrapServers: String,
         consumerProps[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         consumerProps[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = autoOffsetReset
-        val consumerOptions = ReceiverOptions.create<String, String>(consumerProps).subscription(Collections.singleton(topic))
+        val consumerOptions = ReceiverOptions.create<K, V>(consumerProps).subscription(Collections.singleton(topic))
 
         receiver = KafkaReceiver.create(consumerOptions)
                 .receive()

@@ -30,7 +30,7 @@ import kotlin.test.assertEquals
 class FlowTest {
 
     @Autowired
-    private lateinit var kafkaReactiveProducer: KafkaReactiveProducer
+    private lateinit var kafkaReactiveProducer: KafkaReactiveProducer<String, String>
 
     @Autowired
     private lateinit var reactiveKafkaAppProperties: ReactiveKafkaAppProperties
@@ -50,7 +50,7 @@ class FlowTest {
     @Test
     fun `Sends a lowercase input string and then the topology converts it to uppercase string and outputs`() {
 
-        val testConsumer = KafkaReactiveConsumer(
+        val testConsumer = KafkaReactiveConsumer<String, String>(
                 kafkaContainer.bootstrapServers,
                 reactiveKafkaAppProperties.outputTopic,
                 "test-consumer-group",
