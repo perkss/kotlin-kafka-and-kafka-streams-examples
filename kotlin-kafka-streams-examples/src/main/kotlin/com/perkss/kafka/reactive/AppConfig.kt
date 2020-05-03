@@ -27,9 +27,6 @@ import java.util.*
 @Configuration
 class AppConfig {
 
-    // input topic order request // keyed by product id
-    // join with Stock on ktable product ID key
-    // join with customerId and information globalktable foreign key
     @Bean
     fun streamConfig(props: AppProperties): Properties {
         val streamsConfiguration = Properties()
@@ -38,7 +35,6 @@ class AppConfig {
         streamsConfiguration[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = props.schemaRegistry
         streamsConfiguration[StreamsConfig.STATE_DIR_CONFIG] = props.stateDir
         streamsConfiguration[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-//        streamsConfiguration[KafkaAvroSerializerConfig.AV]
         streamsConfiguration[StreamsConfig.TOPOLOGY_OPTIMIZATION] = StreamsConfig.OPTIMIZE// do not create internal changelog have to have source topic as compact https://stackoverflow.com/questions/57164133/kafka-stream-topology-optimization
         return streamsConfiguration
     }
@@ -71,11 +67,12 @@ class AppConfig {
             props: AppProperties,
             customerTable: GlobalKTable<String, GenericRecord>,
             stockTable: KTable<String, Stock>): Topology {
-        return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(), SpecificAvroSerde<OrderRequested>().apply {
-            configure(mapOf(
-                    KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
-            ), false)
-        },
+        return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(),
+                SpecificAvroSerde<OrderRequested>().apply {
+                    configure(mapOf(
+                            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
+                    ), false)
+                },
                 SpecificAvroSerde<OrderConfirmed>().apply {
                     configure(mapOf(
                             KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
