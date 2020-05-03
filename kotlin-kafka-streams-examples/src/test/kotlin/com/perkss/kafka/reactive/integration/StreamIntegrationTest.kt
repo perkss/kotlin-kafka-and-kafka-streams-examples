@@ -84,7 +84,8 @@ class StreamIntegrationTest {
                 put("schema.registry.url", "http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}")
             }
 
-            // has to be done before spring app starts
+            // TODO can this reference the app properties and do it later?
+            //  currently has to be done before spring app starts
             val kafkaAdminClient: AdminClient = KafkaAdminClient.create(producerProps)
             val result: CreateTopicsResult = kafkaAdminClient
                     .createTopics(
