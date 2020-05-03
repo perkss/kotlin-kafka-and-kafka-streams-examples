@@ -2,6 +2,7 @@ perkss:
   kafka:
     example:
       bootstrap-servers: "localhost:9091,localhost:9092,localhost:9093"
+      schema-registry: "http://localhost:8081"
       stock-inventory: "stock"
       customer-information: "customer"
       order-request: "order-request"

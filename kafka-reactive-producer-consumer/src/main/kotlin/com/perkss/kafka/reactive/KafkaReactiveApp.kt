@@ -10,8 +10,8 @@ import reactor.core.publisher.Mono
 import reactor.kafka.sender.SenderRecord
 
 @SpringBootApplication
-class KafkaReactiveApp(private var consumer: KafkaReactiveConsumer,
-                       private var producer: KafkaReactiveProducer,
+class KafkaReactiveApp(private var consumer: KafkaReactiveConsumer<String, String>,
+                       private var producer: KafkaReactiveProducer<String, String>,
                        private var reactiveKafkaAppProperties: ReactiveKafkaAppProperties) : CommandLineRunner {
 
     companion object {
