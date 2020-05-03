@@ -144,7 +144,7 @@ class StreamIntegrationTest {
         val actual = mutableMapOf<String, OrderConfirmed>()
         val expected = mapOf(key to OrderConfirmed(key, productId, customerId, true))
 
-        val timeout = System.currentTimeMillis() + 30000L;
+        val timeout = System.currentTimeMillis() + 60000L;
         while (actual != expected && System.currentTimeMillis() < timeout) {
             val records: ConsumerRecords<String, OrderConfirmed> = testConsumer.poll(Duration.ofSeconds(1))
             records.forEach { record -> actual[record.key()] = record.value() }
