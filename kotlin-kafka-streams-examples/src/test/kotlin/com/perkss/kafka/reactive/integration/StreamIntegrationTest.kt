@@ -87,7 +87,7 @@ class StreamIntegrationTest {
             val result: CreateTopicsResult = kafkaAdminClient
                     .createTopics(
                             listOf("order-request", "order-processed",
-                                    "stock", "customer")
+                                    "stock", "customer", "order-rejected")
                                     .map { name -> NewTopic(name, 3, 1.toShort()) }
                                     .toList())
             logger.info("Topics created {}", result.all().get())
@@ -118,10 +118,10 @@ class StreamIntegrationTest {
         val testProducer = KafkaProducer<String, Any>(producerProps)
         val testConsumer = KafkaConsumer<String, OrderConfirmed>(consumerProps)
 
-        val key = "1"
-        val productId = "2"
+        val orderId = UUID.randomUUID().toString()
+        val productId = orderId
         val customerId = "3"
-        val value = OrderRequested(key, productId, customerId)
+        val value = OrderRequested(orderId, productId, customerId)
 
         // Populate the stock table and the customer table
         testProducer.send(
@@ -133,12 +133,12 @@ class StreamIntegrationTest {
 
         // send Order Request message to topology
         testProducer.send(
-                ProducerRecord(appProperties.orderRequest, key, value))
+                ProducerRecord(appProperties.orderRequest, orderId, value))
 
         testConsumer.subscribe(listOf(appProperties.orderProcessedTopic))
 
         val actual = mutableMapOf<String, OrderConfirmed>()
-        val expected = mapOf(key to OrderConfirmed(key, productId, customerId, true))
+        val expected = mapOf(orderId to OrderConfirmed(orderId, productId, customerId, true))
 
         val timeout = System.currentTimeMillis() + 60000L;
         while (actual != expected && System.currentTimeMillis() < timeout) {
@@ -146,7 +146,7 @@ class StreamIntegrationTest {
             records.forEach { record -> actual[record.key()] = record.value() }
         }
 
-        assertEquals(expected[key], actual[key])
+        assertEquals(expected[orderId], actual[orderId])
         orderProcessingApp.close()
     }
 

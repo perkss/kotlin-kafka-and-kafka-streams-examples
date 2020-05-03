@@ -12,4 +12,5 @@ class AppProperties {
     lateinit var orderProcessedTopic: String
     lateinit var applicationId: String
     lateinit var stateDir: String
+    lateinit var orderRejectedTopic: String
 }

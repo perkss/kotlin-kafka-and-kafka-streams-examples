@@ -7,5 +7,6 @@ perkss:
       customer-information: "customer"
       order-request: "order-request"
       order-processed-topic: "order-processed"
+      order-rejected-Topic: "order-rejected"
       application-id: "OrderProcessing"
       state-dir: "./"

@@ -1,0 +1,26 @@
+{
+  "namespace": "com.perkss.order.model",
+  "type": "record",
+  "name": "OrderRejected",
+  "doc": "Order requests that have failed validation are rejected",
+  "fields": [
+    {
+      "name": "id",
+      "type": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "order_id",
+      "type": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "reason",
+      "type": {
+        "type": "string"
+      }
+    }
+  ]
+}

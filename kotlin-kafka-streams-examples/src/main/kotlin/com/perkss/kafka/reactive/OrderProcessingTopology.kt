@@ -1,6 +1,7 @@
 package com.perkss.kafka.reactive
 
 import com.perkss.order.model.OrderConfirmed
+import com.perkss.order.model.OrderRejected
 import com.perkss.order.model.OrderRequested
 import com.perkss.order.model.Stock
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
@@ -43,22 +44,33 @@ object OrderProcessingTopology {
                         stockTable: KTable<String, Stock>,
                         keySerde: Serde<String>,
                         valSerde: SpecificAvroSerde<OrderRequested>,
+                        orderRejectedSerde: SpecificAvroSerde<OrderRejected>,
                         orderConfirmedSerde: SpecificAvroSerde<OrderConfirmed>): Topology {
-        streamsBuilder
+        val split = streamsBuilder
                 .stream(props.orderRequest, Consumed.with(keySerde, valSerde))
                 .peek { key, value -> logger.info("Consumed {} {}", key, value) }
-                .leftJoin(stockTable) { leftValue: OrderRequested, rightValue: Stock? ->
-                    if (rightValue != null && rightValue.quantityAvailable > 0) {
-                        leftValue
+                .leftJoin(stockTable) { orderRequest: OrderRequested, stock: Stock? ->
+                    if (stock != null && stock.quantityAvailable > 0) {
+                        orderRequest
                     } else {
-                        leftValue // TOOD branch the stream and send not filled response
+                        OrderRejected(UUID.randomUUID().toString(), orderRequest.id, "Not enough stock") // TOOD branch the stream and send not filled response
                     }
                 }
                 .peek { key, value -> logger.info("Joined with Stock {} {}", key, value) }
+                .branch(Predicate<String, Any> { key, value -> value is OrderRequested },
+                        Predicate<String, Any> { key, value -> value is OrderRejected })
+
+        // Order Requested Flow
+        split[0]
+                .mapValues { value -> value as OrderRequested }
+                .peek { key, orderRequested ->
+                    logger.info("Order Requested {} for customer {}",
+                            key, orderRequested.customerId)
+                }
                 .leftJoin(customerTable,
                         // Foreign Key join allowed as a GlobalKTable
-                        KeyValueMapper { leftKey: String, leftValue: OrderRequested -> leftValue.customerId },
-                        ValueJoiner { leftValue: OrderRequested, rightValue: GenericRecord? ->
+                        KeyValueMapper<String, OrderRequested, String> { _: String, orderRequest: OrderRequested -> orderRequest.customerId },
+                        ValueJoiner<OrderRequested, GenericRecord, OrderConfirmed?> { leftValue: OrderRequested, rightValue: GenericRecord? ->
                             if (rightValue != null) {
                                 OrderConfirmed(leftValue.id, leftValue.productId, leftValue.customerId, true)
                             } else {
@@ -66,9 +78,15 @@ object OrderProcessingTopology {
                                 null
                             }
                         })
-                .filter { _, value -> value != null } // TODO is this needed
-                .peek { key, value -> logger.info("Joined with customer {} {}", key, value) }
+                .filter { _, orderConfirmed -> orderConfirmed != null } // TODO is this needed
+                .peek { key, orderConfirmed -> logger.info("Joined with customer {} {}", key, orderConfirmed) }
                 .to(props.orderProcessedTopic, Produced.with(keySerde, orderConfirmedSerde))
+        // OrderRejected Flow
+        split[1]
+                .mapValues { value -> value as OrderRejected }
+                .peek { key, _ -> logger.info("Order Rejected for {}", key) }
+                .to(props.orderRejectedTopic, Produced.with(keySerde, orderRejectedSerde))
+
         // pass to override for optimization
         return streamsBuilder.build(streamConfig)
     }

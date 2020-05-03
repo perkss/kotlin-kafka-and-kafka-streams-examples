@@ -4,6 +4,7 @@ import com.perkss.kafka.reactive.OrderProcessingTopology.customer
 import com.perkss.kafka.reactive.OrderProcessingTopology.orderProcessing
 import com.perkss.kafka.reactive.OrderProcessingTopology.stock
 import com.perkss.order.model.OrderConfirmed
+import com.perkss.order.model.OrderRejected
 import com.perkss.order.model.OrderRequested
 import com.perkss.order.model.Stock
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
@@ -69,6 +70,11 @@ class AppConfig {
             stockTable: KTable<String, Stock>): Topology {
         return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(),
                 SpecificAvroSerde<OrderRequested>().apply {
+                    configure(mapOf(
+                            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
+                    ), false)
+                },
+                SpecificAvroSerde<OrderRejected>().apply {
                     configure(mapOf(
                             KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
                     ), false)
