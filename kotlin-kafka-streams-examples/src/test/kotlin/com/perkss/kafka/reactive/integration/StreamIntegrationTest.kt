@@ -22,7 +22,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.streams.KafkaStreams
 import org.awaitility.Awaitility.await
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -77,16 +77,13 @@ class StreamIntegrationTest {
                 start()
             }
 
-            val producerProps = Properties().apply {
+            val props = Properties().apply {
                 put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.bootstrapServers)
-                put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer::class.java)
-                put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer::class.java)
-                put("schema.registry.url", "http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}")
             }
 
             // TODO can this reference the app properties and do it later?
             //  currently has to be done before spring app starts
-            val kafkaAdminClient: AdminClient = KafkaAdminClient.create(producerProps)
+            val kafkaAdminClient: AdminClient = KafkaAdminClient.create(props)
             val result: CreateTopicsResult = kafkaAdminClient
                     .createTopics(
                             listOf("order-request", "order-processed",
@@ -100,7 +97,6 @@ class StreamIntegrationTest {
 
     @Test
     fun `Sends a order request that is joined with stock and customer and order confirmed is responded`() {
-
         val producerProps = Properties().apply {
             put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.bootstrapServers)
             put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer::class.java)
@@ -150,7 +146,7 @@ class StreamIntegrationTest {
             records.forEach { record -> actual[record.key()] = record.value() }
         }
 
-        Assert.assertEquals(expected[key], actual[key])
+        assertEquals(expected[key], actual[key])
         orderProcessingApp.close()
     }
 
@@ -162,7 +158,5 @@ class StreamIntegrationTest {
                     "perkss.kafka.example.state-dir=${TestUtils.tempDirectory().path}"
             )
         }
-
     }
-
 }

@@ -28,11 +28,10 @@ object OrderProcessingTopology {
     }
 
 
-    fun customer(
-            streamsBuilder: StreamsBuilder,
-            props: AppProperties,
-            keySerde: Serde<String>,
-            valueSerde: GenericAvroSerde): GlobalKTable<String, GenericRecord> =
+    fun customer(streamsBuilder: StreamsBuilder,
+                 props: AppProperties,
+                 keySerde: Serde<String>,
+                 valueSerde: GenericAvroSerde): GlobalKTable<String, GenericRecord> =
             streamsBuilder
                     .globalTable(props.customerInformation,
                             Consumed.with(keySerde, valueSerde), Materialized.`as`(props.customerInformation))
@@ -62,7 +61,10 @@ object OrderProcessingTopology {
                         ValueJoiner { leftValue: OrderRequested, rightValue: GenericRecord? ->
                             if (rightValue != null) {
                                 OrderConfirmed(leftValue.id, leftValue.productId, leftValue.customerId, true)
-                            } else null
+                            } else {
+                                logger.warn("No customer found.")
+                                null
+                            }
                         })
                 .filter { _, value -> value != null } // TODO is this needed
                 .peek { key, value -> logger.info("Joined with customer {} {}", key, value) }
