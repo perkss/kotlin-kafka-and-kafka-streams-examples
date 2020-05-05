@@ -4,7 +4,6 @@ import com.perkss.order.model.OrderConfirmed
 import com.perkss.order.model.OrderRejected
 import com.perkss.order.model.OrderRequested
 import com.perkss.order.model.Stock
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.avro.generic.GenericRecord
@@ -20,11 +19,9 @@ object OrderProcessingTopology {
     private val logger = LoggerFactory.getLogger(OrderProcessingTopology::class.java)
 
     fun stock(streamsBuilder: StreamsBuilder,
+              stockSerde: SpecificAvroSerde<Stock>,
               props: AppProperties): KTable<String, Stock> {
-        val specificAvroSerde = SpecificAvroSerde<Stock>().apply {
-            configure(mutableMapOf(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry), false)
-        }
-        return streamsBuilder.table(props.stockInventory, Consumed.with(Serdes.String(), specificAvroSerde))
+        return streamsBuilder.table(props.stockInventory, Consumed.with(Serdes.String(), stockSerde))
         //, Materialized.`as`(props.stockInventory)
     }
 
@@ -43,19 +40,23 @@ object OrderProcessingTopology {
                         customerTable: GlobalKTable<String, GenericRecord>,
                         stockTable: KTable<String, Stock>,
                         keySerde: Serde<String>,
-                        valSerde: SpecificAvroSerde<OrderRequested>,
+                        orderRequestedSerde: SpecificAvroSerde<OrderRequested>,
                         orderRejectedSerde: SpecificAvroSerde<OrderRejected>,
-                        orderConfirmedSerde: SpecificAvroSerde<OrderConfirmed>): Topology {
+                        orderConfirmedSerde: SpecificAvroSerde<OrderConfirmed>,
+                        stockSerde: SpecificAvroSerde<Stock>): Topology {
         val split = streamsBuilder
-                .stream(props.orderRequest, Consumed.with(keySerde, valSerde))
+                .stream(props.orderRequest, Consumed.with(keySerde, orderRequestedSerde))
                 .peek { key, value -> logger.info("Consumed {} {}", key, value) }
-                .leftJoin(stockTable) { orderRequest: OrderRequested, stock: Stock? ->
+                // Rekey to the Product ID so we can join with Product Table
+                .selectKey { _, value -> value.productId }
+                .peek { key, value -> logger.info("Rekeyed to Product Id {} {}", key, value) }
+                .leftJoin(stockTable, { orderRequest: OrderRequested, stock: Stock? ->
                     if (stock != null && stock.quantityAvailable > 0) {
                         orderRequest
                     } else {
-                        OrderRejected(UUID.randomUUID().toString(), orderRequest.id, "Not enough stock") // TOOD branch the stream and send not filled response
+                        OrderRejected(UUID.randomUUID().toString(), orderRequest.id, "Not enough stock")
                     }
-                }
+                }, Joined.with(keySerde, orderRequestedSerde, stockSerde))
                 .peek { key, value -> logger.info("Joined with Stock {} {}", key, value) }
                 .branch(Predicate<String, Any> { key, value -> value is OrderRequested },
                         Predicate<String, Any> { key, value -> value is OrderRejected })
@@ -63,6 +64,7 @@ object OrderProcessingTopology {
         // Order Requested Flow
         split[0]
                 .mapValues { value -> value as OrderRequested }
+                .selectKey { _, value -> value.id }
                 .peek { key, orderRequested ->
                     logger.info("Order Requested {} for customer {}",
                             key, orderRequested.customerId)
@@ -84,6 +86,7 @@ object OrderProcessingTopology {
         // OrderRejected Flow
         split[1]
                 .mapValues { value -> value as OrderRejected }
+                .selectKey { _, value -> value.id }
                 .peek { key, _ -> logger.info("Order Rejected for {}", key) }
                 .to(props.orderRejectedTopic, Produced.with(keySerde, orderRejectedSerde))
 

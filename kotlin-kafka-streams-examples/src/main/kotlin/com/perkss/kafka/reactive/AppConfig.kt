@@ -43,12 +43,19 @@ class AppConfig {
     @Bean
     fun streamsBuilder() = StreamsBuilder()
 
+    @Bean
+    fun stockSerde(props: AppProperties): SpecificAvroSerde<Stock> =
+            SpecificAvroSerde<Stock>().apply {
+                configure(mutableMapOf(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry), false)
+            }
+
     // stock table keyed by id of stock
     @Bean
     fun stockTable(
             streamsBuilder: StreamsBuilder,
-            props: AppProperties): KTable<String, Stock> =
-            stock(streamsBuilder, props)
+            props: AppProperties,
+            serde: SpecificAvroSerde<Stock>): KTable<String, Stock> =
+            stock(streamsBuilder, serde, props)
 
     // keyed by product ID
     @Bean
@@ -67,7 +74,8 @@ class AppConfig {
             streamsBuilder: StreamsBuilder,
             props: AppProperties,
             customerTable: GlobalKTable<String, GenericRecord>,
-            stockTable: KTable<String, Stock>): Topology {
+            stockTable: KTable<String, Stock>,
+            stockSerde: SpecificAvroSerde<Stock>): Topology {
         return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(),
                 SpecificAvroSerde<OrderRequested>().apply {
                     configure(mapOf(
@@ -83,7 +91,8 @@ class AppConfig {
                     configure(mapOf(
                             KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
                     ), false)
-                })
+                },
+                stockSerde)
     }
 
     @Bean

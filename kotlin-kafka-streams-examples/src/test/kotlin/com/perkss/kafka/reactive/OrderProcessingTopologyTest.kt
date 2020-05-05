@@ -82,18 +82,18 @@ class OrderProcessingTopologyTest {
 
         val customer = customer(builder, appProperties, keySerde, genericAvroSerde)
 
-        val stock = stock(builder, appProperties)
+        val stock = stock(builder, stockSerde, appProperties)
 
         val topology = orderProcessing(props, builder, appProperties, customer, stock,
-                keySerde, orderRequestSerde, orderRejectedSerde, orderProcessedSerde)
+                keySerde, orderRequestSerde, orderRejectedSerde, orderProcessedSerde, stockSerde)
 
         val testDriver = TopologyTestDriver(topology, props)
-        val productId = "12412"
-        val orderId = productId
-        val customerId = "AAAAA"
+        val orderId = UUID.randomUUID().toString()
+        val productId = UUID.randomUUID().toString()
+        val customerId = UUID.randomUUID().toString()
         val stockTopic = testDriver.createInputTopic(appProperties.stockInventory,
                 keySerde.serializer(), stockSerde.serializer())
-        stockTopic.pipeInput(productId, Stock("AA", productId, 1))
+        stockTopic.pipeInput(productId, Stock(productId, "Shower Curtain", 1))
 
         // Customer is populated with GenericAvroSerde customer details
         val customerTopic: TestInputTopic<String, GenericRecord> =

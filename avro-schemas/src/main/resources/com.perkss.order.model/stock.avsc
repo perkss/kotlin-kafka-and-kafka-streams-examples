@@ -11,7 +11,7 @@
       }
     },
     {
-      "name": "product_id",
+      "name": "description",
       "type": {
         "type": "string"
       }

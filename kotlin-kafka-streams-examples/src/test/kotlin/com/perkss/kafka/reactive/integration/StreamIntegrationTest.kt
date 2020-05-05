@@ -42,14 +42,8 @@ import java.util.*
 @SpringBootTest
 @Testcontainers
 @ContextConfiguration(initializers = [StreamIntegrationTest.PropertyInit::class])
-class StreamIntegrationTest {
-
-    // TODO move into constructor
-    @Autowired
-    private lateinit var appProperties: AppProperties
-
-    @Autowired
-    private lateinit var orderProcessingApp: KafkaStreams
+class StreamIntegrationTest @Autowired constructor(private var appProperties: AppProperties,
+                                                   private var orderProcessingApp: KafkaStreams) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(StreamIntegrationTest::class.java)
@@ -119,8 +113,8 @@ class StreamIntegrationTest {
         val testConsumer = KafkaConsumer<String, OrderConfirmed>(consumerProps)
 
         val orderId = UUID.randomUUID().toString()
-        val productId = orderId
-        val customerId = "3"
+        val productId = UUID.randomUUID().toString()
+        val customerId = UUID.randomUUID().toString()
         val value = OrderRequested(orderId, productId, customerId)
 
         // Populate the stock table and the customer table
@@ -129,7 +123,7 @@ class StreamIntegrationTest {
                         Customer(customerId, "perkss", "london").toGenericRecord(SchemaLoader.loadSchema())))
 
         testProducer.send(
-                ProducerRecord(appProperties.stockInventory, productId, Stock(productId, productId, 5)))
+                ProducerRecord(appProperties.stockInventory, productId, Stock(productId, "Party Poppers", 5)))
 
         // send Order Request message to topology
         testProducer.send(
