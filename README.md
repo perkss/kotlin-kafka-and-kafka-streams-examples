@@ -1,4 +1,4 @@
-# Reactive Kotlin Kafka Examples && Kafka Streams with Kotlin
+# Reactive Kotlin Kafka and Kafka Streams with Kotlin
 Kafka and Kafka Stream Examples in Kotlin with Project Reactor Kafka
 
 ## Docker Environment
