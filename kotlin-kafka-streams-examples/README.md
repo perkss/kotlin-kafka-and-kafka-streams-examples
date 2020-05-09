@@ -71,6 +71,8 @@ docker run --rm  -it --net=host confluentinc/cp-schema-registry:latest kafka-avr
 
 ## Tescontainers Integration Tests
 
+Required Docker to be running. 
+
 `StreamIntegrationTest` uses [Testcontainers]("https://www.testcontainers.org/") to fire up a running instance of Kafka and Schema Registry and runs our application to drop messages on Kafka process them and read the output. Check it out a very powerful example.
 
 
