@@ -7,6 +7,9 @@ the Schema Registry.
 
 Please check the directory README for details how to run this example.
 
+## Integration Tests
+Integration tests can be found for each module project and these require Docker to be running and use [Testcontainers](https://www.testcontainers.org/) these are powerful tests that fire up Kafka instances and our application and fully test the flow of messages through our streaming application.
+
 ## Kafka Reactive Producer Consumer
 This example shows how you can use the reactive API to build a consumer from a `lowercase-topic` map the data and output it
 with the same key to a `uppercase-topic` with the data converted to uppercase. Please check the sub module README for 
