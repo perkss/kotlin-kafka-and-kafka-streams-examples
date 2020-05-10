@@ -21,9 +21,9 @@ object AggregateExamples {
 
         // Build a table of the counts
         val aggregated: KTable<String, Long> = input
-                .groupBy { _, value -> value.userId }// group by the user who created the post
+                .groupBy { _, value -> value.userId } // group by the user who created the post
                 .count()
-        // stream the total counts per user our
+        // stream the total counts per user keyed by user ID and the count
         aggregated.toStream().to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()));
         return builder.build()
     }
