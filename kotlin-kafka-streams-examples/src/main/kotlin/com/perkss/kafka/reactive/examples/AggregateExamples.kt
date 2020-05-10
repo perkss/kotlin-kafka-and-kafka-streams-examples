@@ -24,7 +24,7 @@ object AggregateExamples {
                 .groupBy { _, value -> value.userId } // group by the user who created the post
                 .count()
         // stream the total counts per user keyed by user ID and the count
-        aggregated.toStream().to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()));
+        aggregated.toStream().to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()))
         return builder.build()
     }
 
