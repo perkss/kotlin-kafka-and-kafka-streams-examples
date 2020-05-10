@@ -42,8 +42,8 @@ import java.util.*
 @SpringBootTest
 @Testcontainers
 @ContextConfiguration(initializers = [StreamIntegrationTest.PropertyInit::class])
-class StreamIntegrationTest @Autowired constructor(private var appProperties: AppProperties,
-                                                   private var orderProcessingApp: KafkaStreams) {
+internal class StreamIntegrationTest @Autowired constructor(private var appProperties: AppProperties,
+                                                            private var orderProcessingApp: KafkaStreams) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(StreamIntegrationTest::class.java)

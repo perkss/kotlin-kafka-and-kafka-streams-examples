@@ -1,0 +1,36 @@
+{
+  "namespace": "com.perkss.social.media.model",
+  "type": "record",
+  "name": "PostCreated",
+  "doc": "A new social media post has been created",
+  "fields": [
+    {
+      "name": "id",
+      "type": {
+        "type": "string"
+      },
+      "doc": "The unique event ID of each post created"
+    },
+    {
+      "name": "user_id",
+      "type": {
+        "type": "string"
+      },
+      "doc": "The unique user ID who created the post"
+    },
+    {
+      "name": "contents",
+      "type": {
+         "type": "string"
+      },
+      "doc": "The contents of the social media post"
+    },
+    {
+     "name": "timestamp",
+     "type": {
+         "type": "string"
+     },
+     "doc": "The ISO formatted timestamp when the post happened"
+    }
+  ]
+}

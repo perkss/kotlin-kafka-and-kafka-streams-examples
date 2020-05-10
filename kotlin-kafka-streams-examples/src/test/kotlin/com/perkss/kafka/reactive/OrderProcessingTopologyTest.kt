@@ -10,20 +10,22 @@ import com.perkss.order.model.OrderConfirmed
 import com.perkss.order.model.OrderRejected
 import com.perkss.order.model.OrderRequested
 import com.perkss.order.model.Stock
-import io.confluent.common.utils.TestUtils
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.*
+import org.apache.kafka.streams.KeyValue
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.TestInputTopic
+import org.apache.kafka.streams.TopologyTestDriver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class OrderProcessingTopologyTest {
+internal class OrderProcessingTopologyTest {
 
     private val schemaRegistryScope: String = OrderProcessingTopologyTest::class.java.name
     private val mockSchemaRegistryUrl = "mock://$schemaRegistryScope"
@@ -31,18 +33,11 @@ class OrderProcessingTopologyTest {
     @Test
     fun orderProcessingCustomerOrders() {
         val builder = StreamsBuilder()
-
-        val props = Properties()
         val appId = "testOrderProcessing"
         val broker = "dummy:1234"
 
-        props[StreamsConfig.APPLICATION_ID_CONFIG] = appId
-        props[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = broker
-        props[StreamsConfig.TOPOLOGY_OPTIMIZATION] = StreamsConfig.OPTIMIZE
-        props[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.String()::class.java
-        props[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = Serdes.String()::class.java
+        val props = TestProperties.properties(appId, broker)
         props[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = mockSchemaRegistryUrl
-        props[StreamsConfig.STATE_DIR_CONFIG] = TestUtils.tempDirectory().path
 
         val appProperties = AppProperties()
         appProperties.applicationId = appId

@@ -47,7 +47,7 @@
                             <fieldVisibility>PRIVATE</fieldVisibility>
                             <createSetters>false</createSetters>
                             <stringType>String</stringType>
-                            <sourceDirectory>src/main/resources/com.perkss.order.model</sourceDirectory>
+                            <sourceDirectory>${project.basedir}/src/main/resources/</sourceDirectory>
                             <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
                         </configuration>
                     </execution>
