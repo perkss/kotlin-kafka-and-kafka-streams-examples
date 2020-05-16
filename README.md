@@ -1,7 +1,9 @@
 # Reactive Kotlin Kafka and Kafka Streams with Kotlin
 Kafka and Kafka Stream Examples in Kotlin with Project Reactor Kafka
 
-Details found in my [post](https://medium.com/@stuart.m.perks/kafka-and-kafka-streams-in-kotlin-66b165201ed5) 
+Please check out the blog posts for more details.
+* [Kotlin Kafka Streams](https://medium.com/@stuart.m.perks/kafka-and-kafka-streams-in-kotlin-66b165201ed5) 
+* [Reactive Kotlin Kafka](https://medium.com/@stuart.m.perks/project-reactor-reactor-kafka-and-kotlin-1e0463eb5c96)
 
 ## Docker Environment
 Please use the docker-compose file in the root of each module project to create the Kafka Brokers and Zookeeper and where appropriate 

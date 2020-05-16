@@ -10,15 +10,22 @@ import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.test.assertTrue
 
-internal class AggregateExamplesTest {
+class AggregateExamplesTest {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(AggregateExamplesTest::class.java)
+    }
 
     private val schemaRegistryScope: String = AggregateExamplesTest::class.java.name
     private val mockSchemaRegistryUrl = "mock://$schemaRegistryScope"
@@ -38,8 +45,13 @@ internal class AggregateExamplesTest {
         props[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = mockSchemaRegistryUrl
     }
 
+    @AfterEach
+    fun teardown() {
+        MockSchemaRegistry.dropScope(schemaRegistryScope)
+    }
+
     @Test
-    fun buildUserSocialMediaPostsCountTopology() {
+    fun `Social Media Post total count no windowing per user`() {
         val totalUserSocialMediaPostsTopology = AggregateExamples.buildUserSocialMediaPostsTotalCountTopology(inputTopicName, outputTopicName, postCreatedSerde)
         val testDriver = TopologyTestDriver(totalUserSocialMediaPostsTopology, props)
 
@@ -69,32 +81,19 @@ internal class AggregateExamplesTest {
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(alice, 3L)))
 
         testDriver.close()
-        MockSchemaRegistry.dropScope(schemaRegistryScope)
     }
 
     @Test
-    fun buildWindowedUserSocialMediaPostsCountTopology() {
-        val props = TestProperties.properties("aggregate-example-app", "test-host:9092")
-        props[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = mockSchemaRegistryUrl
-
-        val inputTopicName = "post-created"
-        val outputTopicName = "user-posts-total-count"
-
-        val config = mapOf(
-                KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to mockSchemaRegistryUrl)
-
-        val postCreatedSerde = SpecificAvroSerde<PostCreated>()
-        postCreatedSerde.configure(config, false)
-
-        val totalUserSocialMediaPostsTopology = AggregateExamples.buildUserSocialMediaPostsWindowedTotalCountTopology(inputTopicName, outputTopicName, postCreatedSerde)
+    fun `Social Media Post with windows emit each event and total the number of posts per window by user`() {
+        val totalUserSocialMediaPostsTopology = AggregateExamples.buildSocialMediaPostsWindowedTotalCountTopology(inputTopicName, outputTopicName, postCreatedSerde)
         val testDriver = TopologyTestDriver(totalUserSocialMediaPostsTopology, props)
 
         val postCreatedTopic = testDriver.createInputTopic(inputTopicName,
                 Serdes.String().serializer(), postCreatedSerde.serializer())
 
-        val alice = UUID.randomUUID().toString()
-        val bill = UUID.randomUUID().toString()
-        val jasmine = UUID.randomUUID().toString()
+        val alice = "alice${UUID.randomUUID()}"
+        val bill = "bill${UUID.randomUUID()}"
+        val jasmine = "jasmine${UUID.randomUUID()}"
 
         val eventTimeStamp1 = Instant.now()
         // #Window 1
@@ -145,14 +144,88 @@ internal class AggregateExamplesTest {
         // Alice has a single post
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(alice, 1L)))
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(bill, 1L)))
-        // Alice has a second post
+        // # Window 2 Alice has a second post so its emitted as count 1
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(alice, 1L)))
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(jasmine, 1L)))
         // Alice has a third post which is in the same window as her second post so aggregate
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(alice, 2L)))
 
         testDriver.close()
-        MockSchemaRegistry.dropScope(schemaRegistryScope)
+    }
+
+    @Test
+    fun `Social media post count emitted in suppressed window so only final window count is emitted`() {
+        val totalUserSocialMediaPostsTopology = AggregateExamples.buildSocialMediaPostFinalWindowCountTopology(inputTopicName, outputTopicName, postCreatedSerde)
+        val testDriver = TopologyTestDriver(totalUserSocialMediaPostsTopology, props)
+
+        val postCreatedTopic = testDriver.createInputTopic(inputTopicName,
+                Serdes.String().serializer(), postCreatedSerde.serializer())
+
+        val alice = "alice${UUID.randomUUID()}"
+        val bill = "bill${UUID.randomUUID()}"
+        val jasmine = "jasmine${UUID.randomUUID()}"
+
+        val eventTimeStamp1 = Instant.now()
+        // #Window 1
+        postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
+                PostCreated(UUID.randomUUID().toString(),
+                        alice,
+                        "Happy",
+                        eventTimeStamp1.formatInstantToIsoDateTime()))
+
+        // Move 20 seconds forward in time #Window 1
+        val eventTimeStamp2 = eventTimeStamp1.plusSeconds(20)
+
+        postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
+                PostCreated(
+                        UUID.randomUUID().toString(),
+                        bill,
+                        "Party",
+                        eventTimeStamp2.formatInstantToIsoDateTime()))
+
+        // Move 20 seconds forward in time #Window 1
+        val eventTimeStamp3 = eventTimeStamp2.plusSeconds(20)
+
+        postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
+                PostCreated(
+                        UUID.randomUUID().toString(),
+                        alice,
+                        "Running",
+                        eventTimeStamp3.formatInstantToIsoDateTime()))
+
+        // New window
+        // Move 2 seconds forward in time #Window 2
+        val eventTimeStamp4 = eventTimeStamp3.plusSeconds(2)
+
+        postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
+                PostCreated(UUID.randomUUID().toString(), jasmine, "Drinking",
+                        eventTimeStamp4.formatInstantToIsoDateTime()))
+
+        // Move 1 seconds forward in time #Window 2
+        val eventTimeStamp5 = eventTimeStamp4.plusSeconds(1)
+
+        postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
+                PostCreated(UUID.randomUUID().toString(), alice, "Travelling",
+                        eventTimeStamp5.formatInstantToIsoDateTime()))
+
+        val eventTimeStamp6 = eventTimeStamp5.plusSeconds(120)
+        // Dummy event to close the window suppress() will only emit if event-time passed window-end time plus grace-period
+        logger.info("Sending in dummy event to flush the window")
+        postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
+                PostCreated(UUID.randomUUID().toString(), alice, "Close that window",
+                        eventTimeStamp6.formatInstantToIsoDateTime()))
+
+        val outputTopic = testDriver.createOutputTopic(outputTopicName, Serdes.String().deserializer(),
+                Serdes.Long().deserializer())
+
+        val expectedValues = mutableListOf<KeyValue<String, Long>>(
+                KeyValue(alice, 1L), // #Window1 Alice has a single post
+                KeyValue(bill, 1L), // #Window1
+                KeyValue(alice, 2L), // #Window2 Alice has a second post and a third post in the same window and it only emits the final values
+                KeyValue(jasmine, 1L) // #Window2
+        )
+
+        assertTrue { outputTopic.readKeyValuesToList() == expectedValues }
     }
 
     private fun Instant.formatInstantToIsoDateTime(): String =
