@@ -73,7 +73,8 @@ object AggregateExamples {
                 // Note we need to materialize here as serdes changes
                 .count(Materialized.with(Serdes.String(), Serdes.Long()))
                 // Suppress the output so only output of a window is emitted when the window closes.
-                .suppress(Suppressed.untilWindowCloses(unbounded()))
+                // Provide a name so it is constant in the KStream internally.
+                .suppress(Suppressed.untilWindowCloses(unbounded()).withName("SocialMediaCountsSuppression"))
 
         // stream the total counts per user keyed by user ID and the count
         aggregated.toStream { windowedKey, _ -> windowedKey.key() }
