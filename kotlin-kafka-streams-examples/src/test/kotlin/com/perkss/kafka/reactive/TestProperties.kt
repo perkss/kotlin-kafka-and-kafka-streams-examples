@@ -19,6 +19,8 @@ object TestProperties {
         props[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = defaultKeySerde
         props[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = defaultValSerde
         props[StreamsConfig.STATE_DIR_CONFIG] = TestUtils.tempDirectory().path
+        props[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
+        props[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 5
         return props
     }
 }
