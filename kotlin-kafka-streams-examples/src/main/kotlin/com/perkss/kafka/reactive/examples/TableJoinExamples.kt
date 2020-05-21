@@ -11,10 +11,9 @@ object TableJoinExamples {
 
     private val logger = LoggerFactory.getLogger(TableJoinExamples::class.java)
 
-    // TODO make a person and join there age to their name
-    fun tableInnerJoin(firstNamesTopic: String,
-                       lastNamesTopic: String,
-                       fullNameTopic: String): Topology {
+    fun innerJoin(firstNamesTopic: String,
+                  lastNamesTopic: String,
+                  fullNameTopic: String): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -23,8 +22,7 @@ object TableJoinExamples {
         val input2 = builder.table(lastNamesTopic, Consumed.with(Serdes.String(), Serdes.String()))
 
         // Have the same key as prerequisite
-        val joined = input.join(input2) { v1, v2 -> "$v1 $v2" }
-
+        val joined = input.join(input2) { firstName, lastName -> "$firstName $lastName" }
 
         // stream tables first and last names
         joined
@@ -34,9 +32,9 @@ object TableJoinExamples {
         return builder.build()
     }
 
-    fun tableLeftJoin(firstNamesTopic: String,
-                      lastNamesTopic: String,
-                      fullNameTopic: String): Topology {
+    fun leftJoin(firstNamesTopic: String,
+                 lastNamesTopic: String,
+                 fullNameTopic: String): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -45,10 +43,9 @@ object TableJoinExamples {
         val input2 = builder.table(lastNamesTopic, Consumed.with(Serdes.String(), Serdes.String()))
 
         // Have the same key as prerequisite
-        val joined = input.leftJoin(input2) { v1, v2 -> "$v1 $v2" }
+        val joined = input.leftJoin(input2) { firstName, lastName -> "$firstName $lastName" }
 
-
-        // stream joined first and last names
+        // stream tables first and last names
         joined
                 .toStream()
                 .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
@@ -56,9 +53,9 @@ object TableJoinExamples {
         return builder.build()
     }
 
-    fun tableOuterJoin(firstNamesTopic: String,
-                       lastNamesTopic: String,
-                       fullNameTopic: String): Topology {
+    fun outerJoin(firstNamesTopic: String,
+                  lastNamesTopic: String,
+                  fullNameTopic: String): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -67,16 +64,13 @@ object TableJoinExamples {
         val input2 = builder.table(lastNamesTopic, Consumed.with(Serdes.String(), Serdes.String()))
 
         // Have the same key as prerequisite
-        val joined = input.outerJoin(input2) { v1, v2 -> "$v1 $v2" }
+        val joined = input.outerJoin(input2) { firstName, lastName -> "$firstName $lastName" }
 
-
-        // stream joined first and last names
+        // stream tables first and last names
         joined
                 .toStream()
                 .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
                 .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
         return builder.build()
     }
-
-
 }

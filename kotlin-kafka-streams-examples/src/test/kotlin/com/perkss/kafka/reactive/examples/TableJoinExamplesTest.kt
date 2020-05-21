@@ -5,18 +5,10 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
-internal class StreamingJoinExamplesTest {
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(StreamingJoinExamplesTest::class.java)
-    }
-
+internal class TableJoinExamplesTest {
     private val firstNamesTopic = "first-names"
     private val lastNamesTopic = "last-names"
     private val fullNamesTopic = "full-names"
@@ -27,7 +19,7 @@ internal class StreamingJoinExamplesTest {
 
     @Test
     fun `Users First name and Last name is joined with an inner streaming join`() {
-        val innerJoinFullNamesTopology = StreamingJoinExamples.innerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
+        val innerJoinFullNamesTopology = TableJoinExamples.innerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
         val testDriver = TopologyTestDriver(innerJoinFullNamesTopology, props)
 
         val firstName = testDriver.createInputTopic(firstNamesTopic,
@@ -38,7 +30,7 @@ internal class StreamingJoinExamplesTest {
 
         val startingTime = Instant.now()
 
-        // Alice is sent in the same window expect the single out of full name
+        // Alice is sent expect single out of full name
         firstName.pipeInput(aliceId, "Alice", startingTime)
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
 
@@ -51,20 +43,19 @@ internal class StreamingJoinExamplesTest {
                 KeyValue(aliceId, "Alice Parker")
         )
 
-        assertEquals(1, results.size)
+        kotlin.test.assertEquals(1, results.size)
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
 
-        // Inner join and out of the same window so no results expected
+        // Inner join window is irrelevant for table table joins so emit
         firstName.pipeInput(billId, "Bill", startingTime)
         lastName.pipeInput(billId, "Preston", startingTime.plusSeconds(12))
 
         results = fullName.readKeyValuesToList()
 
-        assertEquals(0, results.size)
+        kotlin.test.assertEquals(1, results.size)
 
-        // Inner Join so ordering is irrelevant same window so output single value of joined name
-        // Alice is sent in the same window expect the single out of full name
+        // Inner Join so ordering is irrelevant emit only once from the table table join
         lastName.pipeInput(jasmineId, "Jasmine", startingTime)
         firstName.pipeInput(jasmineId, "Princess", startingTime.plusSeconds(4))
 
@@ -74,14 +65,14 @@ internal class StreamingJoinExamplesTest {
                 KeyValue(jasmineId, "Princess Jasmine")
         )
 
-        assertEquals(1, results.size)
+        kotlin.test.assertEquals(1, results.size)
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
     }
 
     @Test
     fun `Users First name and Last name is joined with an left streaming join`() {
-        val leftJoinFullNamesTopology = StreamingJoinExamples.leftJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
+        val leftJoinFullNamesTopology = TableJoinExamples.leftJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
         val testDriver = TopologyTestDriver(leftJoinFullNamesTopology, props)
 
         val firstName = testDriver.createInputTopic(firstNamesTopic,
@@ -106,27 +97,27 @@ internal class StreamingJoinExamplesTest {
                 KeyValue(aliceId, "Alice Parker")
         )
 
-        assertEquals(2, results.size)
+        kotlin.test.assertEquals(2, results.size)
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
 
-        // Different windows expect only first message to be emitted with null right side
+        // Table to Table Join so no windowing expect both sides to emit
         firstName.pipeInput(billId, "Bill", startingTime)
         lastName.pipeInput(billId, "Preston", startingTime.plusSeconds(12))
 
         results = fullName.readKeyValuesToList()
 
-        assertEquals(1, results.size)
+        kotlin.test.assertEquals(2, results.size)
 
         expectedValues = mutableListOf(
-                KeyValue(billId, "Bill null")
+                KeyValue(billId, "Bill null"),
+                KeyValue(billId, "Bill Preston")
         )
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
 
-        // Left Join so ordering is important expect single result as same window
-        // Princess and Jasmine are sent in the same window expect the single out of full name
-        // as right value comes first but is only emitted when left value arrives
+
+        // Only emit when left side is there so right side is not emitted as comes first
         lastName.pipeInput(jasmineId, "Jasmine", startingTime)
         firstName.pipeInput(jasmineId, "Princess", startingTime.plusSeconds(4))
 
@@ -136,14 +127,14 @@ internal class StreamingJoinExamplesTest {
                 KeyValue(jasmineId, "Princess Jasmine")
         )
 
-        assertEquals(1, results.size)
+        kotlin.test.assertEquals(1, results.size)
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
     }
 
     @Test
     fun `Users First name and Last name is joined with an outer streaming join`() {
-        val outerJoinFullNamesTopology = StreamingJoinExamples.outerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
+        val outerJoinFullNamesTopology = TableJoinExamples.outerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
         val testDriver = TopologyTestDriver(outerJoinFullNamesTopology, props)
 
         val firstName = testDriver.createInputTopic(firstNamesTopic,
@@ -153,8 +144,7 @@ internal class StreamingJoinExamplesTest {
                 Serdes.String().serializer(), Serdes.String().serializer())
 
         val startingTime = Instant.now()
-
-        // Alice is sent in the same window
+        // outer join so emit on first event always
         firstName.pipeInput(aliceId, "Alice", startingTime)
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
 
@@ -168,25 +158,24 @@ internal class StreamingJoinExamplesTest {
                 KeyValue(aliceId, "Alice Parker")
         )
 
-        assertEquals(2, results.size)
+        kotlin.test.assertEquals(2, results.size)
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
 
-        // Send in different windows on Inner Join
-        // Different windows expect each message but no join as outside of same window
+        // outer join so emit on first event always
         firstName.pipeInput(billId, "Bill", startingTime)
         lastName.pipeInput(billId, "Preston", startingTime.plusSeconds(12))
 
         results = fullName.readKeyValuesToList()
 
-        assertEquals(2, results.size)
+        kotlin.test.assertEquals(2, results.size)
 
         expectedValues = mutableListOf(
                 KeyValue(billId, "Bill null"),
-                KeyValue(billId, "null Preston")
+                KeyValue(billId, "Bill Preston")
         )
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
 
         // Outer Join so always emit and side of join is irrelevant
         lastName.pipeInput(jasmineId, "Jasmine", startingTime)
@@ -199,8 +188,8 @@ internal class StreamingJoinExamplesTest {
                 KeyValue(jasmineId, "Princess Jasmine")
         )
 
-        assertEquals(2, results.size)
+        kotlin.test.assertEquals(2, results.size)
 
-        assertTrue { results == expectedValues }
+        kotlin.test.assertTrue { results == expectedValues }
     }
 }

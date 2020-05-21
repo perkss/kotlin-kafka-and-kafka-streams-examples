@@ -13,10 +13,9 @@ object StreamingJoinExamples {
 
     private val logger = LoggerFactory.getLogger(StreamingJoinExamples::class.java)
 
-    // TODO make a person and join there age to their name
-    fun streamingInnerJoin(firstNamesTopic: String,
-                           lastNamesTopic: String,
-                           fullNameTopic: String): Topology {
+    fun innerJoin(firstNamesTopic: String,
+                  lastNamesTopic: String,
+                  fullNameTopic: String): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -26,7 +25,7 @@ object StreamingJoinExamples {
 
         // Have the same key as prerequisite
         val joined = input.join(input2,
-                { v1, v2 -> "$v1 $v2" },
+                { firstName, lastName -> "$firstName $lastName" },
                 JoinWindows.of(Duration.ofSeconds(10)))
 
 
@@ -37,9 +36,9 @@ object StreamingJoinExamples {
         return builder.build()
     }
 
-    fun streamingLeftJoin(firstNamesTopic: String,
-                          lastNamesTopic: String,
-                          fullNameTopic: String): Topology {
+    fun leftJoin(firstNamesTopic: String,
+                 lastNamesTopic: String,
+                 fullNameTopic: String): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -49,7 +48,7 @@ object StreamingJoinExamples {
 
         // Have the same key as prerequisite
         val joined = input.leftJoin(input2,
-                { v1, v2 -> "$v1 $v2" },
+                { firstName, lastName -> "$firstName $lastName" },
                 JoinWindows.of(Duration.ofSeconds(10)))
 
 
@@ -60,9 +59,9 @@ object StreamingJoinExamples {
         return builder.build()
     }
 
-    fun streamingOuterJoin(firstNamesTopic: String,
-                           lastNamesTopic: String,
-                           fullNameTopic: String): Topology {
+    fun outerJoin(firstNamesTopic: String,
+                  lastNamesTopic: String,
+                  fullNameTopic: String): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -72,7 +71,7 @@ object StreamingJoinExamples {
 
         // Have the same key as prerequisite
         val joined = input.outerJoin(input2,
-                { v1, v2 -> "$v1 $v2" },
+                { firstName, lastName -> "$firstName $lastName" },
                 JoinWindows.of(Duration.ofSeconds(10)))
 
 
