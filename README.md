@@ -28,3 +28,9 @@ This module is for examples of using Kafka Streams with Kotlin and Avro. Here we
  of customers to place orders. We use Avro to define schemas for the main topics and use changelog tables to store down product and 
  customer information which is joined to the OrderRequests. This module depends on the Avro code generation in the `avro-schemas` module
  so that needs building before compiling this module.
+ 
+ ### Kafka Streams Examples
+ We also have a package for examples to show the following features [found here.](kotlin-kafka-streams-examples/src/main/kotlin/com/perkss/kafka/reactive/examples)
+ * Windowing
+ * Aggregates
+ * Joins
