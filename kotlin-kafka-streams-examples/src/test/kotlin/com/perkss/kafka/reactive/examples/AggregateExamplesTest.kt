@@ -173,8 +173,8 @@ class AggregateExamplesTest {
                         "Happy",
                         eventTimeStamp1.formatInstantToIsoDateTime()))
 
-        // Move 20 seconds forward in time #Window 1
-        val eventTimeStamp2 = eventTimeStamp1.plusSeconds(20)
+        // Move 10 seconds forward in time #Window 1
+        val eventTimeStamp2 = eventTimeStamp1.plusSeconds(10)
 
         postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
                 PostCreated(
@@ -183,8 +183,9 @@ class AggregateExamplesTest {
                         "Party",
                         eventTimeStamp2.formatInstantToIsoDateTime()))
 
-        // Move 20 seconds forward in time #Window 1
-        val eventTimeStamp3 = eventTimeStamp2.plusSeconds(20)
+        // New window
+        // Move 40 seconds forward in time #Window 2
+        val eventTimeStamp3 = eventTimeStamp2.plusSeconds(40)
 
         postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
                 PostCreated(
@@ -193,7 +194,6 @@ class AggregateExamplesTest {
                         "Running",
                         eventTimeStamp3.formatInstantToIsoDateTime()))
 
-        // New window
         // Move 2 seconds forward in time #Window 2
         val eventTimeStamp4 = eventTimeStamp3.plusSeconds(2)
 
@@ -208,8 +208,9 @@ class AggregateExamplesTest {
                 PostCreated(UUID.randomUUID().toString(), alice, "Travelling",
                         eventTimeStamp5.formatInstantToIsoDateTime()))
 
-        val eventTimeStamp6 = eventTimeStamp5.plusSeconds(120)
+        val eventTimeStamp6 = eventTimeStamp5.plusSeconds(45)
         // Dummy event to close the window suppress() will only emit if event-time passed window-end time plus grace-period
+        // so we need to let the stream processor know that the window has closed now due to a future event time entering the system
         logger.info("Sending in dummy event to flush the window")
         postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
                 PostCreated(UUID.randomUUID().toString(), alice, "Close that window",
