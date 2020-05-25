@@ -4,6 +4,7 @@ import com.perkss.kafka.reactive.TestProperties
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
@@ -16,9 +17,16 @@ internal class StreamTableJoinExamplesTest {
     private val lastNamesTopic = "last-names"
     private val fullNamesTopic = "full-names"
     private val props = TestProperties.properties("joining-examples", "test-host:9092")
-    private val aliceId = "alice${UUID.randomUUID()}"
-    private val billId = "bill${UUID.randomUUID()}"
-    private val jasmineId = "jasmine${UUID.randomUUID()}"
+    private lateinit var aliceId: String
+    private lateinit var billId: String
+    private lateinit var jasmineId: String
+
+    @BeforeEach
+    fun setup() {
+        aliceId = "alice${UUID.randomUUID()}"
+        jasmineId = "jasmine${UUID.randomUUID()}"
+        billId = "bill${UUID.randomUUID()}"
+    }
 
     @Test
     fun `Users First name and Last name is joined with an inner streaming join`() {
