@@ -11,10 +11,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
+import java.time.*
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -48,6 +45,9 @@ internal class WindowingExamplesTest {
         testDriver.close()
     }
 
+    /**
+     * Tumbling window we emit once per window
+     */
     @Test
     fun `Fixed Size Tumbling Window of Social Media Post Length`() {
         val postLengthTopology = windowingExamples
@@ -88,6 +88,11 @@ internal class WindowingExamplesTest {
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(aliceId, 43L)))
     }
 
+    /**
+     * Hopping window we can emit multiple times in the window so window is on the Minutes of
+     * for example [2020-01-01T20:05:00Z 2020-01-01T20:07:00Z] and [2020-01-01T20:06:00Z, 2020-01-01T20:08:00Z]
+     * https://www.confluent.io/blog/watermarks-tables-event-time-dataflow-model/
+     */
     @Test
     fun `Hopping Window of 2 minutes with 1 minute overlaps of Social Media Post Length`() {
         val postLengthTopology = windowingExamples
@@ -104,7 +109,7 @@ internal class WindowingExamplesTest {
         //https://stackoverflow.com/questions/43771904/kafka-streams-hopping-windows-deduplicate-keys
         val aliceFirstTimestamp = LocalDateTime.of(
                 LocalDate.of(2020, 1, 1),
-                LocalTime.of(20, 0, 0, 0))
+                LocalTime.of(20, 0, 20, 0))
                 .toInstant(ZoneOffset.UTC)
         val billFirstTimestamp = aliceFirstTimestamp.plusMillis(10)
 
@@ -141,6 +146,18 @@ internal class WindowingExamplesTest {
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(aliceId, 43L)))
 
         assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(aliceId, 43L)))
+
+        val billSecondTimestamp = billFirstTimestamp.plus(Duration.ofMinutes(6)).plusSeconds(15)
+        logger.info("Sending the first post from alice at {}", billSecondTimestamp)
+
+        // Bill post is in middle of two window at 2020-01-01T20:06:35.010Z
+        postCreatedTopic.pipeInput(billId, "Bill posting my second post", billSecondTimestamp)
+
+        // We output twice here due to windows First [2020-01-01T20:05:00Z 2020-01-01T20:07:00Z]
+        assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(billId, 27L)))
+
+        // Second is [2020-01-01T20:06:00Z, 2020-01-01T20:08:00Z]
+        assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(billId, 27L)))
     }
 
     @Test
