@@ -6,7 +6,10 @@ import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -39,7 +42,10 @@ internal class StreamTableJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
         // Alice is sent in the same window expect the single out of full name
@@ -98,7 +104,10 @@ internal class StreamTableJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
         // Alice is sent in the same window

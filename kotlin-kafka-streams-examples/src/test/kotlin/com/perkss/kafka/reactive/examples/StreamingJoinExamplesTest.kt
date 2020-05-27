@@ -7,7 +7,10 @@ import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -44,7 +47,10 @@ internal class StreamingJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window expect the single out of full name
         firstName.pipeInput(aliceId, "Alice", startingTime)
@@ -98,7 +104,10 @@ internal class StreamingJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window
         firstName.pipeInput(aliceId, "Alice", startingTime)
@@ -160,7 +169,10 @@ internal class StreamingJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window
         firstName.pipeInput(aliceId, "Alice", startingTime)

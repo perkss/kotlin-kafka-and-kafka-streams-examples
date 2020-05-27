@@ -14,9 +14,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.test.assertTrue
@@ -95,7 +93,10 @@ class AggregateExamplesTest {
         val bill = "bill${UUID.randomUUID()}"
         val jasmine = "jasmine${UUID.randomUUID()}"
 
-        val eventTimeStamp1 = Instant.now()
+        val eventTimeStamp1 = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
         // #Window 1
         postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
                 PostCreated(UUID.randomUUID().toString(),
@@ -165,7 +166,10 @@ class AggregateExamplesTest {
         val bill = "bill${UUID.randomUUID()}"
         val jasmine = "jasmine${UUID.randomUUID()}"
 
-        val eventTimeStamp1 = Instant.now()
+        val eventTimeStamp1 = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
         // #Window 1
         postCreatedTopic.pipeInput(UUID.randomUUID().toString(),
                 PostCreated(UUID.randomUUID().toString(),

@@ -6,7 +6,6 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.*
 import org.apache.kafka.streams.state.SessionStore
-import org.apache.kafka.streams.state.WindowStore
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -22,12 +21,11 @@ class WindowingExamples {
     fun userLikesFixedWindowTopology(inputTopic: String,
                                      outputTopic: String,
                                      windowLengthMinutes: Long = 2,
-                                     advanceMinutes: Long = 2,
-                                     stateStoreName: String): Topology {
+                                     advanceMinutes: Long = 2): Topology {
 
         val builder = StreamsBuilder()
 
-        // consume the user like by name and count
+        // consume the user post by name and count
         val input = builder
                 .stream(inputTopic, Consumed.with(Serdes.String(), Serdes.String()))
                 .peek { key, value -> logger.info("Consuming Key {} value {}", key, value) }
@@ -35,7 +33,7 @@ class WindowingExamples {
         val windowSizeMs = Duration.ofMinutes(windowLengthMinutes)
         val advanceMs = Duration.ofMinutes(advanceMinutes)
 
-        val aggregatedUserPostLengths = input
+        input
                 .groupByKey() // Group by each user
                 .windowedBy(TimeWindows.of(windowSizeMs).advanceBy(advanceMs).grace(Duration.ZERO))
                 .aggregate(
@@ -44,16 +42,11 @@ class WindowingExamples {
                             logger.info("{} Adding {} to current total {}", key, newValue.length, aggValue)
                             aggValue + newValue.length
                         }, // We take the length of each post and aggregate them
-                        Materialized.`as`<String, Long, WindowStore<Bytes, ByteArray>>(stateStoreName)
-                                .withKeySerde(Serdes.String())
-                                .withValueSerde(Serdes.Long())
-                                .withLoggingDisabled()
-                                .withRetention(Duration.ofMinutes(windowLengthMinutes)))
-
-        // stream the total length of posts per window of each user
-        aggregatedUserPostLengths.toStream()
-        { windowedKey, _ -> windowedKey.key() }
+                        Materialized.with(Serdes.String(), Serdes.Long()))
+                .toStream()
+                { windowedKey, _ -> windowedKey.key() }
                 .peek { key, value -> logger.info("Publishing Key {} value {}", key, value) }
+                // stream the total length of posts per window of each user
                 .to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()))
         return builder.build()
     }
