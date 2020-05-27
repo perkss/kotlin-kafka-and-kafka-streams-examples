@@ -4,9 +4,13 @@ import com.perkss.kafka.reactive.TestProperties
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -21,9 +25,16 @@ internal class StreamingJoinExamplesTest {
     private val lastNamesTopic = "last-names"
     private val fullNamesTopic = "full-names"
     private val props = TestProperties.properties("joining-examples", "test-host:9092")
-    private val aliceId = "alice${UUID.randomUUID()}"
-    private val billId = "bill${UUID.randomUUID()}"
-    private val jasmineId = "jasmine${UUID.randomUUID()}"
+    private lateinit var aliceId: String
+    private lateinit var billId: String
+    private lateinit var jasmineId: String
+
+    @BeforeEach
+    fun setup() {
+        aliceId = "alice${UUID.randomUUID()}"
+        jasmineId = "jasmine${UUID.randomUUID()}"
+        billId = "bill${UUID.randomUUID()}"
+    }
 
     @Test
     fun `Users First name and Last name is joined with an inner streaming join`() {
@@ -36,7 +47,10 @@ internal class StreamingJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window expect the single out of full name
         firstName.pipeInput(aliceId, "Alice", startingTime)
@@ -90,7 +104,10 @@ internal class StreamingJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window
         firstName.pipeInput(aliceId, "Alice", startingTime)
@@ -152,7 +169,10 @@ internal class StreamingJoinExamplesTest {
         val lastName = testDriver.createInputTopic(lastNamesTopic,
                 Serdes.String().serializer(), Serdes.String().serializer())
 
-        val startingTime = Instant.now()
+        val startingTime = LocalDateTime.of(
+                LocalDate.of(2020, 1, 1),
+                LocalTime.of(20, 0, 0, 0))
+                .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window
         firstName.pipeInput(aliceId, "Alice", startingTime)
