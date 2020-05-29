@@ -8,14 +8,13 @@ import org.apache.kafka.streams.TopologyTestDriver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import java.time.*
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-
 
 internal class WindowingExamplesTest {
 

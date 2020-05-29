@@ -11,13 +11,13 @@ import org.apache.kafka.streams.TopologyTestDriver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.test.assertTrue
 
 class AggregateExamplesTest {
 

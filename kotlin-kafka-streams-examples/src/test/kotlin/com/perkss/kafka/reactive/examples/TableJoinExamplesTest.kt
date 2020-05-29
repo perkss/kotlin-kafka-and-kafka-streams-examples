@@ -4,6 +4,8 @@ import com.perkss.kafka.reactive.TestProperties
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -57,9 +59,9 @@ internal class TableJoinExamplesTest {
                 KeyValue(aliceId, "Alice Parker")
         )
 
-        kotlin.test.assertEquals(1, results.size)
+        assertEquals(1, results.size)
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
 
         // Inner join window is irrelevant for table table joins so emit
         firstName.pipeInput(billId, "Bill", startingTime)
@@ -67,7 +69,7 @@ internal class TableJoinExamplesTest {
 
         results = fullName.readKeyValuesToList()
 
-        kotlin.test.assertEquals(1, results.size)
+        assertEquals(1, results.size)
 
         // Inner Join so ordering is irrelevant emit only once from the table table join
         lastName.pipeInput(jasmineId, "Jasmine", startingTime)
@@ -79,9 +81,9 @@ internal class TableJoinExamplesTest {
                 KeyValue(jasmineId, "Princess Jasmine")
         )
 
-        kotlin.test.assertEquals(1, results.size)
+        assertEquals(1, results.size)
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
     }
 
     @Test
@@ -114,9 +116,9 @@ internal class TableJoinExamplesTest {
                 KeyValue(aliceId, "Alice Parker")
         )
 
-        kotlin.test.assertEquals(2, results.size)
+        assertEquals(2, results.size)
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
 
         // Table to Table Join so no windowing expect both sides to emit
         firstName.pipeInput(billId, "Bill", startingTime)
@@ -124,14 +126,14 @@ internal class TableJoinExamplesTest {
 
         results = fullName.readKeyValuesToList()
 
-        kotlin.test.assertEquals(2, results.size)
+        assertEquals(2, results.size)
 
         expectedValues = mutableListOf(
                 KeyValue(billId, "Bill null"),
                 KeyValue(billId, "Bill Preston")
         )
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
 
 
         // Only emit when left side is there so right side is not emitted as comes first
@@ -144,9 +146,9 @@ internal class TableJoinExamplesTest {
                 KeyValue(jasmineId, "Princess Jasmine")
         )
 
-        kotlin.test.assertEquals(1, results.size)
+        assertEquals(1, results.size)
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
     }
 
     @Test
@@ -178,9 +180,9 @@ internal class TableJoinExamplesTest {
                 KeyValue(aliceId, "Alice Parker")
         )
 
-        kotlin.test.assertEquals(2, results.size)
+        assertEquals(2, results.size)
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
 
         // outer join so emit on first event always
         firstName.pipeInput(billId, "Bill", startingTime)
@@ -188,14 +190,14 @@ internal class TableJoinExamplesTest {
 
         results = fullName.readKeyValuesToList()
 
-        kotlin.test.assertEquals(2, results.size)
+        assertEquals(2, results.size)
 
         expectedValues = mutableListOf(
                 KeyValue(billId, "Bill null"),
                 KeyValue(billId, "Bill Preston")
         )
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
 
         // Outer Join so always emit and side of join is irrelevant
         lastName.pipeInput(jasmineId, "Jasmine", startingTime)
@@ -208,8 +210,8 @@ internal class TableJoinExamplesTest {
                 KeyValue(jasmineId, "Princess Jasmine")
         )
 
-        kotlin.test.assertEquals(2, results.size)
+        assertEquals(2, results.size)
 
-        kotlin.test.assertTrue { results == expectedValues }
+        assertTrue { results == expectedValues }
     }
 }

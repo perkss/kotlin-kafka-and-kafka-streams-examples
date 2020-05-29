@@ -5,7 +5,9 @@ import com.perkss.kafka.reactive.config.ReactiveKafkaAppProperties
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.awaitility.Awaitility.await
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.until
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +23,6 @@ import reactor.kafka.receiver.ReceiverRecord
 import reactor.kafka.sender.SenderRecord
 import reactor.test.test
 import java.time.Duration
-import kotlin.test.assertEquals
 
 
 @SpringBootTest
@@ -43,7 +44,7 @@ class FlowTest {
         internal fun beforeAll() {
             kafkaContainer = KafkaContainer("5.3.1")
             kafkaContainer.start()
-            await().until { kafkaContainer.isRunning }
+            await until { kafkaContainer.isRunning }
         }
     }
 
@@ -68,7 +69,6 @@ class FlowTest {
         val adminClient = AdminClient.create(conf)
 
         val consumerGroups = adminClient.describeConsumerGroups(listOf(reactiveKafkaAppProperties.consumerGroupId))
-
 
         // send example message to topology
         kafkaReactiveProducer.send(
