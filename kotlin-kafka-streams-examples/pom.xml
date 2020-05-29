@@ -5,14 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.perkss</groupId>
         <artifactId>kotlin-kafka-examples</artifactId>
+        <groupId>com.perkss</groupId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.perkss.kafka.reactive</groupId>
     <artifactId>kotlin-kafka-streams-examples</artifactId>
-    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
