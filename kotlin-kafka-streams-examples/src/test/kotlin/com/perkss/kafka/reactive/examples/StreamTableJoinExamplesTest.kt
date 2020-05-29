@@ -4,6 +4,8 @@ import com.perkss.kafka.reactive.TestProperties
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.TopologyTestDriver
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -11,8 +13,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 internal class StreamTableJoinExamplesTest {
 
