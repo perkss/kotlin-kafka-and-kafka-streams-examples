@@ -14,3 +14,4 @@ buildNumber.propertiesReactiveKafka
 .mvn/timing.propertiesReactiveKafka
 .mvn/wrapper/maven-wrapper.jar
 /.gradle/
+/avro-schemas/src/main/java/
