@@ -15,7 +15,7 @@ class WebSocketConfig {
 
     @Bean
     fun webSocketHandlerMapping(webSocketHandler: WebSocketHandler): HandlerMapping {
-        val map = mapOf("/event-emitter" to webSocketHandler)
+        val map = mapOf("/social-media-posts" to webSocketHandler)
         return SimpleUrlHandlerMapping(map, -1)
     }
 

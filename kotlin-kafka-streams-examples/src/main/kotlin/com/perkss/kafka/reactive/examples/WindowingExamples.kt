@@ -44,10 +44,10 @@ class WindowingExamples {
                         }, // We take the length of each post and aggregate them
                         Materialized.with(Serdes.String(), Serdes.Long()))
                 .toStream()
-                { windowedKey, _ -> windowedKey.key() }
-                .peek { key, value -> logger.info("Publishing Key {} value {}", key, value) }
+              //  { windowedKey, _ -> windowedKey.key() }
+                .peek { key, value -> logger.info("Publishing Key {} in window [{},{}] value {}", key.key(), key.window().startTime(), key.window().endTime(), value) }
                 // stream the total length of posts per window of each user
-                .to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()))
+                .to(outputTopic, Produced.with(WindowedSerdes.TimeWindowedSerde(Serdes.String()), Serdes.Long()))
         return builder.build()
     }
 

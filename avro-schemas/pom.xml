@@ -8,6 +8,7 @@
         <artifactId>kotlin-kafka-examples</artifactId>
         <groupId>com.perkss</groupId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>avro-schemas</artifactId>

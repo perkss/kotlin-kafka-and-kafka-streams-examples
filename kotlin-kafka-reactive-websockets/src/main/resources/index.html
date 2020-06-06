@@ -2,32 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Baeldung: Spring 5 Reactive Client WebSocket (Browser)</title>
+    <title>Social Media Posts</title>
 </head>
 <body>
 
 <div class="events"></div>
 <script>
-    var clientWebSocket = new WebSocket("ws://localhost:8080/event-emitter");
-    clientWebSocket.onopen = function() {
+    const clientWebSocket = new WebSocket("ws://localhost:8080/social-media-posts");
+    clientWebSocket.onopen = function () {
         console.log("clientWebSocket.onopen", clientWebSocket);
         console.log("clientWebSocket.readyState", "websocketstatus");
-        clientWebSocket.send("event-me-from-browser");
+        clientWebSocket.send("send-me-some-events-initiates-session");
     }
-    clientWebSocket.onclose = function(error) {
+    clientWebSocket.onclose = function (error) {
         console.log("clientWebSocket.onclose", clientWebSocket, error);
         events("Closing connection");
     }
-    clientWebSocket.onerror = function(error) {
+    clientWebSocket.onerror = function (error) {
         console.log("clientWebSocket.onerror", clientWebSocket, error);
-        events("An error occured");
+        events("An error occurred");
     }
-    clientWebSocket.onmessage = function(error) {
+    clientWebSocket.onmessage = function (error) {
         console.log("clientWebSocket.onmessage", clientWebSocket, error);
         events(error.data);
     }
+
     function events(responseEvent) {
-        document.querySelector(".events").innerHTML += responseEvent + "<br>";
+        document.querySelector(".events").innerHTML += "Receieved =" + responseEvent + "<br>";
     }
 </script>
 </body>
