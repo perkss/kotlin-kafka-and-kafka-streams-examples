@@ -4,7 +4,7 @@ This module formed of two parts:
  
 1) A fully fledged Kafka Streams Spring Boot application providing an ordering system which Avro, joins and output. 
 
-2) Example package containing examples for Windowing, Aggregations and Joining.
+2) Example package containing examples for [Windowing, Aggregations and Joining](https://github.com/perkss/kotlin-kafka-and-kafka-streams-examples/tree/master/kotlin-kafka-streams-examples/src/main/kotlin/com/perkss/kafka/reactive/examples).
 
 ## Getting up and Running
 
