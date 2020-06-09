@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Social Media Posts</title>
+</head>
+<body>
+
+<div class="events"></div>
+<script>
+    const clientWebSocket = new WebSocket("ws://localhost:8080/social-media-posts");
+    clientWebSocket.onopen = function () {
+        console.log("clientWebSocket.onopen", clientWebSocket);
+        console.log("clientWebSocket.readyState", "websocketstatus");
+        clientWebSocket.send("send-me-some-events-initiates-session");
+    }
+    clientWebSocket.onclose = function (error) {
+        console.log("clientWebSocket.onclose", clientWebSocket, error);
+        events("Closing connection");
+    }
+    clientWebSocket.onerror = function (error) {
+        console.log("clientWebSocket.onerror", clientWebSocket, error);
+        events("An error occurred");
+    }
+    clientWebSocket.onmessage = function (error) {
+        console.log("clientWebSocket.onmessage", clientWebSocket, error);
+        events(error.data);
+    }
+
+    function events(responseEvent) {
+        document.querySelector(".events").innerHTML += "Receieved =" + responseEvent + "<br>";
+    }
+</script>
+</body>
+</html>

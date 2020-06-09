@@ -1,5 +1,11 @@
 # Kafka Streams and Kotlin
 
+This module formed of two parts:
+ 
+1) A fully fledged Kafka Streams Spring Boot application providing an ordering system which Avro, joins and output. 
+
+2) Example package containing examples for Windowing, Aggregations and Joining.
+
 ## Getting up and Running
 
 Start up the Kafka and Zookeeper cluster. Three nodes so need at least two up.
@@ -75,7 +81,9 @@ Required Docker to be running.
 
 `StreamIntegrationTest` uses [Testcontainers](https://www.testcontainers.org/) to fire up a running instance of Kafka and Schema Registry and runs our application to drop messages on Kafka process them and read the output. Check it out a very powerful example.
 
+## Examples Understanding KStream Windowing
 
 
+TODO a table of each event, event timestamp, the window its in and the  
 
 
