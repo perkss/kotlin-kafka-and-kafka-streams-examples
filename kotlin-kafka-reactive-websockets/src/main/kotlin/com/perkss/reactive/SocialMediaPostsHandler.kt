@@ -38,6 +38,4 @@ class SocialMediaPostsHandler(private val kafkaReceiver: KafkaReceiver<String, S
                     connections.remove(session.id)
                 }
     }
-
-
 }
