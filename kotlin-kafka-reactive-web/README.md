@@ -5,7 +5,7 @@ sending them on reactively to a websocket subscribing UI
 ## Building our DockerFile and running it
 
 ```shell script
-cd kotlin-kafka-reactive-websockets
+cd kotlin-kafka-reactive-web
 # Build the Jar
 mvn clean install
 # Build using Dockerfile in current directory
