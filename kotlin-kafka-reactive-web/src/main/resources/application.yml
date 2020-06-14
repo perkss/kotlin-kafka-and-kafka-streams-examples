@@ -1,0 +1,9 @@
+perkss:
+  kafka:
+    example:
+      bootstrap-servers: "192.168.99.100:9092"
+      input-topic: "social-media-posts"
+      consumer-group-id: "websocket-topology"
+
+server:
+  port: 8090

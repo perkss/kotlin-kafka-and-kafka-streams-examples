@@ -1,7 +1,6 @@
 package com.perkss.reactive
 
 import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import junit.framework.Assert.assertEquals
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -10,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Bean
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import reactor.core.publisher.Flux
@@ -20,6 +20,7 @@ import java.net.URI
 import java.time.Duration
 
 
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SocialMediaPostsAcceptanceTest {
 
