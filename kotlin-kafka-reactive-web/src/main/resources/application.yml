@@ -1,7 +1,8 @@
 perkss:
   kafka:
     example:
-      bootstrap-servers: "192.168.99.100:9092"
+#      if running in docket container need to override to host.docker.internal:19092
+      bootstrap-servers: "localhost:9092"
       input-topic: "social-media-posts"
       consumer-group-id: "websocket-topology"
 

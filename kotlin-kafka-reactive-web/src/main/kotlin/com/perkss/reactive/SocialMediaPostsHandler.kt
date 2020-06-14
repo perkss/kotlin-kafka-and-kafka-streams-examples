@@ -29,6 +29,7 @@ class SocialMediaPostsHandler(private val kafkaReceiver: KafkaReceiver<String, S
         val output = session.send(
                 kafkaReceiver
                         .receive()
+                        .doOnNext { logger.info("Sending back message {}", it.value()) }
                         .map { session.textMessage(it.value()) })
 
         return Mono.zip(input, output)
