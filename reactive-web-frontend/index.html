@@ -8,7 +8,7 @@
 
 <div class="events"></div>
 <script>
-    const clientWebSocket = new WebSocket("ws://localhost:8090/social-media-posts");
+    const clientWebSocket = new WebSocket("ws://host.docker.internal:8090/social-media-posts");
     clientWebSocket.onopen = function () {
         console.log("clientWebSocket.onopen", clientWebSocket);
         console.log("clientWebSocket.readyState", "websocketstatus");
