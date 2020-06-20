@@ -22,5 +22,45 @@ docker exec -it kafka-1 kafka-console-consumer --bootstrap-server kafka-1:9092 -
 ```
 
 
+## Running on Minishift
+
+Start up docker and then Minishift.
+
+```shell script
+minishift start --iso-url centos
+```
+
+```
+minishift docker-env
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.101:2376"
+export DOCKER_CERT_PATH="/Users/john/.minishift/certs"
+export DOCKER_API_VERSION="1.24"
+# Run this command to configure your shell:
+# eval $(minishift docker-env)
+```
+
+```shell script
+docker tag reactive-web $(minishift openshift registry)/myproject/reactive-web
+```
+
+```shell script
+docker push $(minishift openshift registry)/myproject/reactive-web
+```
+
+```shell script
+oc new-app --image-stream=reactive-web --name=reactive-web
+oc expose service reactive-web
+```
+
+```shell script
+http://reactive-web-myproject.192.168.64.8.nip.io/user/1
+```
+
+https://docs.okd.io/3.11/minishift/openshift/openshift-docker-registry.html#deploy-applications
+https://docs.okd.io/3.11/minishift/using/docker-daemon.html
+
+
+
 
 
