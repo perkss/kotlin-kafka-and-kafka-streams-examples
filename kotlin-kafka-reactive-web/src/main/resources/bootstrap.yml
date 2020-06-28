@@ -1,0 +1,11 @@
+application:
+  name: reactive-web-service
+  cloud:
+    kubernetes:
+      reload:
+        enabled: true
+        mode: polling
+        period: 5000
+      config:
+        namespace: myproject
+        name: reactive-web-service

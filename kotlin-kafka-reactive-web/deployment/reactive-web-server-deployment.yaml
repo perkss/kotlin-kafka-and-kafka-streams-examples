@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reactive-web-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reactive-web-service
+  template:
+    metadata:
+      labels:
+        app: reactive-web-service
+    spec:
+      containers:
+        - name: reactive-web-service
+          image: 172.30.1.1:5000/myproject/reactive-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: reactive-web-service
+                  key: password
+          envFrom:
+            - configMapRef:
+                name: reactive-web-service
+          volumeMounts:
+            - name: reactive-web-service
+              mountPath: "/config"
+              readOnly: true
+          ports:
+            - containerPort: 8080
+            - containerPort: 8778
+              name: jolokia
+              protocol: TCP
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 300
+            periodSeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 300
+            periodSeconds: 60
+      volumes:
+        - name: reactive-web-service
+          configMap:
+            name: reactive-web-service
+            items:
+              - key: application.yml
+                path: application.yml
+      serviceAccountName: config-reader

@@ -1,5 +1,6 @@
 package com.perkss.reactive.config
 
+import com.perkss.reactive.UserHandler
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -17,7 +18,7 @@ import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
 import java.util.*
 
-@EnableConfigurationProperties(ReactiveKafkaAppProperties::class)
+@EnableConfigurationProperties
 @Configuration
 class WebSocketConfig {
 
@@ -48,5 +49,9 @@ class WebSocketConfig {
     fun webSocketService(): WebSocketService? {
         return HandshakeWebSocketService(ReactorNettyRequestUpgradeStrategy())
     }
+
+    @Bean
+    fun userHandler(reactiveKafkaAppProperties: ReactiveKafkaAppProperties): UserHandler
+            = UserHandler(reactiveKafkaAppProperties)
 
 }

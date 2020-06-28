@@ -1,10 +1,6 @@
-perkss:
-  kafka:
-    example:
-#      if running in docket container need to override to host.docker.internal:19092
-      bootstrap-servers: "localhost:9092"
-      input-topic: "social-media-posts"
-      consumer-group-id: "websocket-topology"
-
-server:
-  port: 8090
+management:
+  metrics:
+    web:
+      server:
+        request:
+          metric-name: reactive-web-service.timer.metric
