@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reactive-web-service
+  labels:
+    app: reactive-web-service
+data:
+  application.yml: |-
+    perkss:
+      kafka:
+        example:
+          bootstrap-servers: "localhost:9092"
+          input-topic: "social-media-posts"
+          consumer-group-id: "websocket-topology"

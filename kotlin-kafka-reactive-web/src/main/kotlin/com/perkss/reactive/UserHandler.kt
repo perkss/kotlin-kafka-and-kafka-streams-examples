@@ -1,5 +1,6 @@
 package com.perkss.reactive
 
+import com.perkss.reactive.config.ReactiveKafkaAppProperties
 import kotlinx.coroutines.flow.flow
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -12,7 +13,7 @@ private val store = ConcurrentHashMap<String, User>()
 
 data class User(val id: String, val name: String)
 
-class UserHandler {
+class UserHandler(private val appProps: ReactiveKafkaAppProperties) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(UserHandler::class.java)
@@ -21,7 +22,7 @@ class UserHandler {
     suspend fun getUser(request: ServerRequest): ServerResponse {
         return ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyAndAwait(flow { emit(JSONObject.wrap("{\"id\":\"${request.pathVariable("id")}\"}")) })
+                .bodyAndAwait(flow { emit(JSONObject.wrap("{\"id\":\"${appProps.inputTopic}\"}")) })
     }
 
     suspend fun createUser(request: ServerRequest): ServerResponse {

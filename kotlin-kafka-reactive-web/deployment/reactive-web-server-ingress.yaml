@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: reactive-web-service
+spec:
+  rules:
+    - host: reactive-web-service.192.168.64.11.nip.io
+      http:
+        paths:
+          - backend:
+              serviceName: reactive-web-service
+              servicePort: 8080
