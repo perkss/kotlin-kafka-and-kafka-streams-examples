@@ -3,8 +3,8 @@ package com.perkss.reactive
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.mock
 import com.perkss.reactive.config.ReactiveKafkaAppProperties
-import junit.framework.Assert.assertEquals
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
