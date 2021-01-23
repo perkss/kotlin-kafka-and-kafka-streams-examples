@@ -108,10 +108,11 @@ docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-console-consumer 
 docker exec -it kafka-3 kafka-console-producer --broker-list kafka-2:29092  --topic name --property "parse.key=true" --property "key.separator=:"
 ```
 
-### Test
+### Test semantics
 
 For the first test we will run just a KTable that consumes the messages off a compacted topic after two messages with
-the same key have been placed on a topic.
+the same key have been placed on a topic. I would expect that this topology will process all messages on start up
+including duplicate keys so we see the full history following streaming semantics.
 
 ```shell
 Topic: name	PartitionCount: 3	ReplicationFactor: 3	Configs: cleanup.policy=compact
@@ -130,7 +131,7 @@ Topic: name	PartitionCount: 3	ReplicationFactor: 3	Configs: cleanup.policy=compa
             .to("name-formatted")
 ```
 
-Put two messages on the topic with the same key
+Put two messages on the `name` topic with the same key
 
 ```shell
 tom	perks
@@ -139,14 +140,14 @@ tom matthews
 
 If you run the application now as expected it will process both messages.
 
-Now lets add a globaltable into the mix and join on it. This should only join the latest values.
-
 ```shell
 docker exec -it kafka-3 kafka-streams-application-reset --application-id OrderProcessing \
                                       --input-topics name \
                                       --bootstrap-servers kafka-1:29091,kafka-2:29092,kafka-3:29093 \
                                       --zookeeper zookeeper-1:22181,zookeeper-2:22182,zookeeper-3:22183
 ```
+
+Now lets add a join to itself using the KTable.
 
 ```shell
         val nameKTable = streamsBuilder
@@ -164,37 +165,56 @@ docker exec -it kafka-3 kafka-streams-application-reset --application-id OrderPr
             .to("name-formatted", Produced.with(Serdes.String(), Serdes.String()))
 ```
 
-Now if we (inner) join the stream to the table itself and we put two messages
+Now if we (inner) join the stream to the table and send these messages and then start the application up we more
+messages
 
 ```shell
-stuart:c
-stuart:d
-max:a
-stuart:e
+zara:a
+zara:b
+zara:c
+paul:a
 ```
 
-We now get a result of
+We now get a result of processing just the last for a key. Interestingly the last message is processed first, most
+likely due to the compaction.
 
 ```shell
-stuart:e
+Processing paul, a
+Joining the Stream Name a to the KTable Name a
+Processing zara, c
+Joining the Stream Name c to the KTable Name c
 ```
 
 Now if we left join the stream to the table itself and we put two messages
 
 ```shell
-perkss:a
-perkss:b
-sam:a
-perkss:c
+zara:d
+zara:e
+zara:f
+paul:b
 ```
+
+As expected a left join makes no difference.
 
 ```shell
-sam:a
-perkss:c
+Processing paul, b
+Joining the Stream Name b to the KTable Name b
+Processing zara, f
+Joining the Stream Name f to the KTable Name f
 ```
 
-You cannot join a global k table on it self
-as `Invalid topology: Topic name has already been registered by another source.`
+Now lets drop a live message onto the KTable backed by topic `name`
+
+```shell
+paul:c
+```
+
+This results in:
+
+```shell
+Processing paul, c
+Joining the Stream Name c to the KTable Name c
+```
 
 If we were to rekey and join with a different key how are the semantics well let see
 
@@ -223,7 +243,7 @@ sarah:mark3
 mark:sarah2
 ```
 
-Results in
+Results are that we take the latest value like above of the tables and only process that on startup.
 
 ```shell
 Processing sarah, mark3
