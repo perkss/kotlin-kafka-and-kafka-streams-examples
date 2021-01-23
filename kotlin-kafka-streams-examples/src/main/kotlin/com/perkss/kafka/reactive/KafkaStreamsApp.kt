@@ -18,8 +18,8 @@ class KafkaStreamsApp(
 
     override fun run(vararg args: String) {
         logger.info("Running Kotlin Kakfa Streams")
-        // orderProcessingApp.start()
-        bootstrapSemantics.start()
+        orderProcessingApp.start()
+        //bootstrapSemantics.start()
     }
 }
 
