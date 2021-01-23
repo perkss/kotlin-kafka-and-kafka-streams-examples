@@ -7,7 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class KafkaStreamsApp(private val orderProcessingApp: KafkaStreams) : CommandLineRunner {
+class KafkaStreamsApp(
+    private val orderProcessingApp: KafkaStreams,
+    private val bootstrapSemantics: KafkaStreams
+) : CommandLineRunner {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaStreamsApp::class.java)
@@ -15,7 +18,8 @@ class KafkaStreamsApp(private val orderProcessingApp: KafkaStreams) : CommandLin
 
     override fun run(vararg args: String) {
         logger.info("Running Kotlin Kakfa Streams")
-        orderProcessingApp.start()
+        // orderProcessingApp.start()
+        bootstrapSemantics.start()
     }
 }
 

@@ -36,7 +36,8 @@ class AppConfig {
         streamsConfiguration[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = props.schemaRegistry
         streamsConfiguration[StreamsConfig.STATE_DIR_CONFIG] = props.stateDir
         streamsConfiguration[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-        streamsConfiguration[StreamsConfig.TOPOLOGY_OPTIMIZATION] = StreamsConfig.OPTIMIZE// do not create internal changelog have to have source topic as compact https://stackoverflow.com/questions/57164133/kafka-stream-topology-optimization
+        streamsConfiguration[StreamsConfig.TOPOLOGY_OPTIMIZATION] =
+            StreamsConfig.OPTIMIZE// do not create internal changelog have to have source topic as compact https://stackoverflow.com/questions/57164133/kafka-stream-topology-optimization
         return streamsConfiguration
     }
 
@@ -45,58 +46,80 @@ class AppConfig {
 
     @Bean
     fun stockSerde(props: AppProperties): SpecificAvroSerde<Stock> =
-            SpecificAvroSerde<Stock>().apply {
-                configure(mutableMapOf(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry), false)
-            }
+        SpecificAvroSerde<Stock>().apply {
+            configure(mutableMapOf(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry), false)
+        }
 
     // stock table keyed by id of stock
     @Bean
     fun stockTable(
-            streamsBuilder: StreamsBuilder,
-            props: AppProperties,
-            serde: SpecificAvroSerde<Stock>): KTable<String, Stock> =
-            stock(streamsBuilder, serde, props)
+        streamsBuilder: StreamsBuilder,
+        props: AppProperties,
+        serde: SpecificAvroSerde<Stock>
+    ): KTable<String, Stock> =
+        stock(streamsBuilder, serde, props)
 
     // keyed by product ID
     @Bean
     fun customerTable(
-            streamsBuilder: StreamsBuilder,
-            props: AppProperties): GlobalKTable<String, GenericRecord> =
-            customer(streamsBuilder, props, Serdes.String(), GenericAvroSerde().apply {
-                configure(mapOf(
-                        KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
-                ), false) // TODO make bean
-            })
+        streamsBuilder: StreamsBuilder,
+        props: AppProperties
+    ): GlobalKTable<String, GenericRecord> =
+        customer(streamsBuilder, props, Serdes.String(), GenericAvroSerde().apply {
+            configure(
+                mapOf(
+                    KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
+                ), false
+            ) // TODO make bean
+        })
 
     @Bean
     fun orderProcessingTopology(
-            streamConfig: Properties,
-            streamsBuilder: StreamsBuilder,
-            props: AppProperties,
-            customerTable: GlobalKTable<String, GenericRecord>,
-            stockTable: KTable<String, Stock>,
-            stockSerde: SpecificAvroSerde<Stock>): Topology {
-        return orderProcessing(streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(),
-                SpecificAvroSerde<OrderRequested>().apply {
-                    configure(mapOf(
-                            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
-                    ), false)
-                },
-                SpecificAvroSerde<OrderRejected>().apply {
-                    configure(mapOf(
-                            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
-                    ), false)
-                },
-                SpecificAvroSerde<OrderConfirmed>().apply {
-                    configure(mapOf(
-                            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
-                    ), false)
-                },
-                stockSerde)
+        streamConfig: Properties,
+        streamsBuilder: StreamsBuilder,
+        props: AppProperties,
+        customerTable: GlobalKTable<String, GenericRecord>,
+        stockTable: KTable<String, Stock>,
+        stockSerde: SpecificAvroSerde<Stock>
+    ): Topology {
+        return orderProcessing(
+            streamConfig, streamsBuilder, props, customerTable, stockTable, Serdes.String(),
+            SpecificAvroSerde<OrderRequested>().apply {
+                configure(
+                    mapOf(
+                        KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
+                    ), false
+                )
+            },
+            SpecificAvroSerde<OrderRejected>().apply {
+                configure(
+                    mapOf(
+                        KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
+                    ), false
+                )
+            },
+            SpecificAvroSerde<OrderConfirmed>().apply {
+                configure(
+                    mapOf(
+                        KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to props.schemaRegistry
+                    ), false
+                )
+            },
+            stockSerde
+        )
     }
 
     @Bean
-    fun orderProcessingApp(orderProcessingTopology: Topology,
-                           streamConfig: Properties) = KafkaStreams(orderProcessingTopology, streamConfig)
+    fun orderProcessingApp(
+        orderProcessingTopology: Topology,
+        streamConfig: Properties
+    ) = KafkaStreams(orderProcessingTopology, streamConfig)
+
+    @Bean
+    fun bootstrapSemantics(
+        streamsBuilder: StreamsBuilder,
+        streamConfig: Properties
+    ) = KafkaStreams(BootstrapSemanticsTopology.build(streamsBuilder, streamConfig), streamConfig)
+
 
 }
