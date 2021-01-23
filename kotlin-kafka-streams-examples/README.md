@@ -242,6 +242,155 @@ Therefore we can see that using the KTable and joining with itself in this simpl
 value when processing the stream. To guarantee this we could even check the message timestamps if the joined version is
 newer use that, or drop the message and wait for the new version to come in.
 
+### Join another table
+
+```shell script
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --create --zookeeper localhost:22181 --replication-factor 3 --partitions 3 --topic first-name
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --alter --zookeeper localhost:22181 --topic first-name --config cleanup.policy=compact
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --describe --zookeeper localhost:22181 --topic first-name 
+
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --create --zookeeper localhost:22181 --replication-factor 3 --partitions 3 --topic last-name
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --alter --zookeeper localhost:22181 --topic last-name --config cleanup.policy=compact
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --describe --zookeeper localhost:22181 --topic last-name 
+
+docker run --rm  --net=host confluentinc/cp-kafka:latest kafka-topics --create --zookeeper localhost:22181 --replication-factor 3 --partitions 3 --topic joined-name
+```
+
+Lets populate the topics before starting the application
+
+```shell
+docker exec -it kafka-3 kafka-console-producer --broker-list kafka-2:29092  --topic first-name --property "parse.key=true" --property "key.separator=:"
+
+1:tom
+1:matthew
+2:mark
+```
+
+```shell
+docker exec -it kafka-3 kafka-console-producer --broker-list kafka-2:29092  --topic last-name --property "parse.key=true" --property "key.separator=:"
+
+1:banks
+2:pears
+2:sanders
+```
+
+This results in processing all three messages on the stream but no joins successful. Behaviour falls in line with it not
+waiting to populate the table and streaming all messages.
+
+```shell
+Processing 2, mark
+Processing 1, tom
+Processing 1, matthew
+```
+
+```shell
+ nameKTable
+            .toStream()
+            .peek { key, value ->
+                logger.info("Processing {}, {}", key, value)
+            }
+            .join(lastNameKTable, ValueJoiner { value1, value2 ->
+                logger.info("Joining the Stream First Name {} to the KTable Last Name {}", value1, value2)
+                "$value1 $value2"
+            }, Joined.with(Serdes.String(), Serdes.String(), Serdes.String()))
+            .to("joined-name", Produced.with(Serdes.String(), Serdes.String()))
+
+```
+
+If we send a last name then a first name like so
+
+Last name
+
+```shell
+3:last
+```
+
+First name
+
+```shell
+3:first
+```
+
+Result we get the join successful.
+
+```shell
+Processing 3, first
+Joining the Stream First Name first to the KTable Last Name last
+```
+
+This is due to the timing semantics of KTable. Lets put another first name with the same key.
+
+Now lets do it with a GlobalKTable I would expect the GlobalKtable to pause execution until populated and then join
+successfully but still stream all keys.
+
+```shell
+3:first2
+```
+
+Again it joins
+
+```shell
+Processing 3, first2
+Joining the Stream First Name first2 to the KTable Last Name last
+```
+
+If a late message came it would not join if its timestamp was before the table message timestamp. Here the timestamps
+are related.
+
+```shell
+  val nameKTable = streamsBuilder
+            .table("first-name", Consumed.with(Serdes.String(), Serdes.String()))
+
+        val lastNameKTable = streamsBuilder
+            .globalTable("last-name", Consumed.with(Serdes.String(), Serdes.String()))
+
+        nameKTable
+            .toStream()
+            .peek { key, value ->
+                logger.info("Processing {}, {}", key, value)
+            }
+            .join(
+                lastNameKTable,
+                KeyValueMapper<String, String, String> { key, value -> key },
+                ValueJoiner { value1: String, value2: String ->
+                    logger.info("Joining the Stream First Name {} to the KTable Last Name {}", value1, value2)
+                    "$value1 $value2"
+                }, Named.`as`("global")
+            )
+            .to("joined-name", Produced.with(Serdes.String(), Serdes.String()))
+
+```
+
+```shell
+docker exec -it kafka-3 kafka-console-producer --broker-list kafka-2:29092  --topic first-name --property "parse.key=true" --property "key.separator=:"
+
+1:peter
+1:jackson
+2:steven
+```
+
+With existing
+
+```shell
+docker exec -it kafka-3 kafka-console-producer --broker-list kafka-2:29092  --topic last-name --property "parse.key=true" --property "key.separator=:"
+
+1:banks
+2:pears
+2:sanders
+2:holly
+```
+
+Results
+
+```shell
+peter banks
+jackson banks
+steven holly
+```
+
+As expected from documentation the GlobalKTable will load up all the data first before starting the application. If this
+is the case then we will always join against the tables latest value.
+
 ## Tescontainers Integration Tests
 
 Required Docker to be running.
