@@ -131,14 +131,19 @@ Topic: name	PartitionCount: 3	ReplicationFactor: 3	Configs: cleanup.policy=compa
             .to("name-formatted")
 ```
 
-Put two messages on the `name` topic with the same key
+Put two messages on the `name` topic with the same key when the application is stopped.
 
 ```shell
 tom	perks
 tom matthews
 ```
 
-If you run the application now as expected it will process both messages.
+```shell
+Processing tom, perks
+Processing tom, matthew
+```
+
+Then run the application, as expected it will process both messages.
 
 ```shell
 docker exec -it kafka-3 kafka-streams-application-reset --application-id OrderProcessing \
@@ -147,7 +152,7 @@ docker exec -it kafka-3 kafka-streams-application-reset --application-id OrderPr
                                       --zookeeper zookeeper-1:22181,zookeeper-2:22182,zookeeper-3:22183
 ```
 
-Now lets add a join to itself using the KTable.
+Now let's add a join to itself using the KTable.
 
 ```shell
         val nameKTable = streamsBuilder
@@ -165,8 +170,7 @@ Now lets add a join to itself using the KTable.
             .to("name-formatted", Produced.with(Serdes.String(), Serdes.String()))
 ```
 
-Now if we (inner) join the stream to the table and send these messages and then start the application up we more
-messages
+Now if we (inner) join the stream to the table and send these messages and then start the application up.
 
 ```shell
 zara:a
@@ -176,7 +180,7 @@ paul:a
 ```
 
 We now get a result of processing just the last for a key. Interestingly the last message is processed first, most
-likely due to the compaction.
+likely due to the compaction and partitioning.
 
 ```shell
 Processing paul, a
@@ -185,7 +189,7 @@ Processing zara, c
 Joining the Stream Name c to the KTable Name c
 ```
 
-Now if we left join the stream to the table itself and we put two messages
+Now if we left join the stream to the table itself and we put two messages and start up.
 
 ```shell
 zara:d
@@ -194,7 +198,7 @@ zara:f
 paul:b
 ```
 
-As expected a left join makes no difference.
+As expected a left join makes no difference same result as before.
 
 ```shell
 Processing paul, b
@@ -235,6 +239,7 @@ If we were to rekey and join with a different key how are the semantics well let
             .to("name-formatted", Produced.with(Serdes.String(), Serdes.String()))
 ```
 
+Put these messages onto the compact topic `name` whilst the application is down.
 ```shell
 sarah:mark1
 mark:sarah1
@@ -243,7 +248,7 @@ sarah:mark3
 mark:sarah2
 ```
 
-Results are that we take the latest value like above of the tables and only process that on startup.
+Results are that we take the latest value like above of the tables and only process that on start up.
 
 ```shell
 Processing sarah, mark3
@@ -251,7 +256,6 @@ Processing mark, sarah2
 
 Joining the Stream Name mark3 to the KTable Name sarah2
 Joining the Stream Name sarah2 to the KTable Name mark3
-
 
 OutputTopic > 
 sarah2
@@ -295,7 +299,8 @@ docker exec -it kafka-3 kafka-console-producer --broker-list kafka-2:29092  --to
 ```
 
 This results in processing all three messages on the stream but no joins successful. Behaviour falls in line with it not
-waiting to populate the table and streaming all messages.
+waiting to populate the table and streaming all messages. The timestamps are not matched as we send the table last-name
+topic after the streaming messages so they are not joined.
 
 ```shell
 Processing 2, mark
@@ -319,13 +324,13 @@ Processing 1, matthew
 
 If we send a last name then a first name like so
 
-Last name
+Sending on the `last-name` topic.
 
 ```shell
 3:last
 ```
 
-First name
+Then send on the `first-name` topic.
 
 ```shell
 3:first
@@ -338,7 +343,10 @@ Processing 3, first
 Joining the Stream First Name first to the KTable Last Name last
 ```
 
-This is due to the timing semantics of KTable. Lets put another first name with the same key.
+This is due to the timing semantics of KTable where they are event times so this case the default Kafka broker event
+time.
+
+Lets put another first name with the same key.
 
 Now lets do it with a GlobalKTable I would expect the GlobalKtable to pause execution until populated and then join
 successfully but still stream all keys.
