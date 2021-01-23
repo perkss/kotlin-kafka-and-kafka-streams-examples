@@ -9,7 +9,7 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class KafkaStreamsApp(
     private val orderProcessingApp: KafkaStreams,
-    private val bootstrapSemantics: KafkaStreams
+   // private val bootstrapSemantics: KafkaStreams
 ) : CommandLineRunner {
 
     companion object {

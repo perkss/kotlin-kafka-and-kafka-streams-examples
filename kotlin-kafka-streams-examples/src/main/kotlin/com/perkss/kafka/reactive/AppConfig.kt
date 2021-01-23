@@ -115,11 +115,11 @@ class AppConfig {
         streamConfig: Properties
     ) = KafkaStreams(orderProcessingTopology, streamConfig)
 
-    @Bean
-    fun bootstrapSemantics(
-        streamsBuilder: StreamsBuilder,
-        streamConfig: Properties
-    ) = KafkaStreams(BootstrapSemanticsTopology.build(streamsBuilder, streamConfig), streamConfig)
+//    @Bean
+//    fun bootstrapSemantics(
+//        streamsBuilder: StreamsBuilder,
+//        streamConfig: Properties
+//    ) = KafkaStreams(BootstrapSemanticsTopology.build(streamsBuilder, streamConfig), streamConfig)
 
 
 }
