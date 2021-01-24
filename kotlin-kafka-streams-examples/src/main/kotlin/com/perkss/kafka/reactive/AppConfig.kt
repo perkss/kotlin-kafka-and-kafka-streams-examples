@@ -36,8 +36,13 @@ class AppConfig {
         streamsConfiguration[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = props.schemaRegistry
         streamsConfiguration[StreamsConfig.STATE_DIR_CONFIG] = props.stateDir
         streamsConfiguration[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-        streamsConfiguration[StreamsConfig.TOPOLOGY_OPTIMIZATION] =
+        streamsConfiguration[StreamsConfig.TOPOLOGY_OPTIMIZATION_CONFIG] =
             StreamsConfig.OPTIMIZE// do not create internal changelog have to have source topic as compact https://stackoverflow.com/questions/57164133/kafka-stream-topology-optimization
+        // disable cache for testing
+        streamsConfiguration[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
+        streamsConfiguration[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.String()::class.java
+        streamsConfiguration[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = Serdes.String()::class.java
+
         return streamsConfiguration
     }
 
