@@ -80,9 +80,11 @@ internal class StreamIntegrationTest @Autowired constructor(private var appPrope
             val kafkaAdminClient: AdminClient = KafkaAdminClient.create(props)
             val result: CreateTopicsResult = kafkaAdminClient
                     .createTopics(
-                            listOf("order-request", "order-processed",
-                                    "stock", "customer", "order-rejected")
-                                    .map { name -> NewTopic(name, 3, 1.toShort()) }
+                            listOf(
+                                "order-request", "order-processed",
+                                "stock", "customer", "order-rejected"
+                            )
+                                .map { name -> NewTopic(name, 12, 1.toShort()) }
                                     .toList())
             logger.info("Topics created {}", result.all().get())
 
@@ -102,45 +104,62 @@ internal class StreamIntegrationTest @Autowired constructor(private var appPrope
             put(ConsumerConfig.GROUP_ID_CONFIG, "test-consumer")
             put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
             put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.bootstrapServers)
-            put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer::class.java)
-            put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroDeserializer::class.java)
+            put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringDeserializer::class.java
+            )
+            put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                io.confluent.kafka.serializers.KafkaAvroDeserializer::class.java
+            )
             put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true)
-            put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}")
+            put(
+                KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+                "http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}"
+            )
         }
 
 
         val testProducer = KafkaProducer<String, Any>(producerProps)
         val testConsumer = KafkaConsumer<String, OrderConfirmed>(consumerProps)
 
-        val orderId = UUID.randomUUID().toString()
-        val productId = UUID.randomUUID().toString()
-        val customerId = UUID.randomUUID().toString()
+        val orderId = "e125125125gasfaseegakjgsaka"
+        val productId = "e124121ffgaavasraseveas"
+        val customerId = "f124f25125212156"
         val value = OrderRequested(orderId, productId, customerId)
 
         // Populate the stock table and the customer table
         testProducer.send(
-                ProducerRecord(appProperties.customerInformation, customerId,
-                        Customer(customerId, "perkss", "london").toGenericRecord(SchemaLoader.loadSchema())))
+            ProducerRecord(
+                appProperties.customerInformation, customerId,
+                Customer(customerId, "perkss", "london").toGenericRecord(SchemaLoader.loadSchema())
+            )
+        )
 
         testProducer.send(
-                ProducerRecord(appProperties.stockInventory, productId, Stock(productId, "Party Poppers", 5)))
+            ProducerRecord(appProperties.stockInventory, productId, Stock(productId, "Party Poppers", 5))
+        )
 
         // send Order Request message to topology
         testProducer.send(
-                ProducerRecord(appProperties.orderRequest, orderId, value))
+            ProducerRecord(appProperties.orderRequest, orderId, value)
+        )
 
         testConsumer.subscribe(listOf(appProperties.orderProcessedTopic))
 
-        val actual = mutableMapOf<String, OrderConfirmed>()
-        val expected = mapOf(orderId to OrderConfirmed(orderId, productId, customerId, true))
+        val actual = mutableMapOf<String, Pair<Int, OrderConfirmed>>()
+        val expectedPartition = 3
+        val expected = mapOf(orderId to (expectedPartition to OrderConfirmed(orderId, productId, customerId, true)))
 
-        val timeout = System.currentTimeMillis() + 60000L;
-        while (actual != expected && System.currentTimeMillis() < timeout) {
-            val records: ConsumerRecords<String, OrderConfirmed> = testConsumer.poll(Duration.ofSeconds(1))
-            records.forEach { record -> actual[record.key()] = record.value() }
+        val timeout = System.currentTimeMillis() + 60000L
+        while (actual.isEmpty() && System.currentTimeMillis() < timeout) {
+            val records: ConsumerRecords<String, OrderConfirmed> = testConsumer.poll(Duration.ofSeconds(5))
+            assertEquals(1, records.count())
+            records.forEach { record -> actual[record.key()] = record.partition() to record.value() }
         }
 
         assertEquals(expected[orderId], actual[orderId])
+        assertEquals(expectedPartition, actual[orderId]?.first)
         orderProcessingApp.close()
     }
 

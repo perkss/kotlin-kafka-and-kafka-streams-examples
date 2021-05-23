@@ -9,7 +9,6 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 class KafkaStreamsApp(
     private val orderProcessingApp: KafkaStreams,
-    //private val bootstrapSemantics: KafkaStreams
 ) : CommandLineRunner {
 
     companion object {
@@ -19,7 +18,6 @@ class KafkaStreamsApp(
     override fun run(vararg args: String) {
         logger.info("Running Kotlin Kakfa Streams")
         orderProcessingApp.start()
-        //bootstrapSemantics.start()
     }
 }
 

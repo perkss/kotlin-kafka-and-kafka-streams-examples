@@ -1,5 +1,6 @@
 package com.perkss.kafka.reactive
 
+import com.perkss.kafka.reactive.processor.RekeyStream
 import com.perkss.order.model.OrderConfirmed
 import com.perkss.order.model.OrderRejected
 import com.perkss.order.model.OrderRequested
@@ -22,7 +23,6 @@ object OrderProcessingTopology {
               stockSerde: SpecificAvroSerde<Stock>,
               props: AppProperties): KTable<String, Stock> {
         return streamsBuilder.table(props.stockInventory, Consumed.with(Serdes.String(), stockSerde))
-        //, Materialized.`as`(props.stockInventory)
     }
 
 
@@ -44,13 +44,18 @@ object OrderProcessingTopology {
                         orderRejectedSerde: SpecificAvroSerde<OrderRejected>,
                         orderConfirmedSerde: SpecificAvroSerde<OrderConfirmed>,
                         stockSerde: SpecificAvroSerde<Stock>): Topology {
+
+        val rekeyStream = { RekeyStream<String, OrderRequested> { it.productId } }
+
         val split = streamsBuilder
-                .stream(props.orderRequest, Consumed.with(keySerde, orderRequestedSerde))
-                .peek { key, value -> logger.info("Consumed {} {}", key, value) }
-                // Rekey to the Product ID so we can join with Product Table
-                .selectKey { _, value -> value.productId }
-                .peek { key, value -> logger.info("Rekeyed to Product Id {} {}", key, value) }
-                .leftJoin(stockTable, { orderRequest: OrderRequested, stock: Stock? ->
+            .stream(props.orderRequest, Consumed.with(keySerde, orderRequestedSerde))
+            .peek { key, value -> logger.info("Consumed {} {}", key, value) }
+            // Rekey to the Product ID so we can join with Product Table
+            //.selectKey { _, value -> value.productId }
+            // Use the Processor API to rekey so we do dont create another topic
+            .transform(rekeyStream)
+            .peek { key, value -> logger.info("Rekeyed to Product Id {} {}", key, value) }
+            .leftJoin(stockTable, { orderRequest: OrderRequested, stock: Stock? ->
                     if (stock != null && stock.quantityAvailable > 0) {
                         orderRequest
                     } else {
