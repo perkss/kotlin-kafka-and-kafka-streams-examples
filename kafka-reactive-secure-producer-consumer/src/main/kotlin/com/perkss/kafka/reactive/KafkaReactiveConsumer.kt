@@ -11,10 +11,12 @@ import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
 import java.util.*
 
-class KafkaReactiveConsumer(bootstrapServers: String,
-                            topic: String,
-                            sslEnabled: Boolean,
-                            saslEnabled: Boolean) {
+class KafkaReactiveConsumer(
+    bootstrapServers: String,
+    topic: String,
+    sslEnabled: Boolean,
+    saslEnabled: Boolean
+) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveConsumer::class.java)
@@ -32,7 +34,8 @@ class KafkaReactiveConsumer(bootstrapServers: String,
         if (sslEnabled) {
             consumerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
             // TODO properly property this could DockerFile it and mount the secrets at runtime
-            consumerProps["ssl.truststore.location"] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.truststore.jks"
+            consumerProps["ssl.truststore.location"] =
+                "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.truststore.jks"
             consumerProps["ssl.truststore.password"] = "my-test-password"
             consumerProps[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = " "
         }
@@ -45,11 +48,12 @@ class KafkaReactiveConsumer(bootstrapServers: String,
             consumerProps["sasl.mechanism"] = "PLAIN"
         }
 
-        val consumerOptions = ReceiverOptions.create<String, String>(consumerProps).subscription(Collections.singleton(topic))
+        val consumerOptions =
+            ReceiverOptions.create<String, String>(consumerProps).subscription(Collections.singleton(topic))
 
         receiver = KafkaReceiver.create<String, String>(consumerOptions)
-                .receiveAutoAck()
-                .concatMap { it }
+            .receiveAutoAck()
+            .concatMap { it }
     }
 
     fun consume() = receiver

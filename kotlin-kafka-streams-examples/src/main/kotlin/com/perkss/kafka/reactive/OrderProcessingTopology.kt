@@ -19,31 +19,39 @@ import java.util.*
 object OrderProcessingTopology {
     private val logger = LoggerFactory.getLogger(OrderProcessingTopology::class.java)
 
-    fun stock(streamsBuilder: StreamsBuilder,
-              stockSerde: SpecificAvroSerde<Stock>,
-              props: AppProperties): KTable<String, Stock> {
+    fun stock(
+        streamsBuilder: StreamsBuilder,
+        stockSerde: SpecificAvroSerde<Stock>,
+        props: AppProperties
+    ): KTable<String, Stock> {
         return streamsBuilder.table(props.stockInventory, Consumed.with(Serdes.String(), stockSerde))
     }
 
 
-    fun customer(streamsBuilder: StreamsBuilder,
-                 props: AppProperties,
-                 keySerde: Serde<String>,
-                 valueSerde: GenericAvroSerde): GlobalKTable<String, GenericRecord> =
-            streamsBuilder
-                    .globalTable(props.customerInformation,
-                            Consumed.with(keySerde, valueSerde), Materialized.`as`(props.customerInformation))
+    fun customer(
+        streamsBuilder: StreamsBuilder,
+        props: AppProperties,
+        keySerde: Serde<String>,
+        valueSerde: GenericAvroSerde
+    ): GlobalKTable<String, GenericRecord> =
+        streamsBuilder
+            .globalTable(
+                props.customerInformation,
+                Consumed.with(keySerde, valueSerde), Materialized.`as`(props.customerInformation)
+            )
 
-    fun orderProcessing(streamConfig: Properties,
-                        streamsBuilder: StreamsBuilder,
-                        props: AppProperties,
-                        customerTable: GlobalKTable<String, GenericRecord>,
-                        stockTable: KTable<String, Stock>,
-                        keySerde: Serde<String>,
-                        orderRequestedSerde: SpecificAvroSerde<OrderRequested>,
-                        orderRejectedSerde: SpecificAvroSerde<OrderRejected>,
-                        orderConfirmedSerde: SpecificAvroSerde<OrderConfirmed>,
-                        stockSerde: SpecificAvroSerde<Stock>): Topology {
+    fun orderProcessing(
+        streamConfig: Properties,
+        streamsBuilder: StreamsBuilder,
+        props: AppProperties,
+        customerTable: GlobalKTable<String, GenericRecord>,
+        stockTable: KTable<String, Stock>,
+        keySerde: Serde<String>,
+        orderRequestedSerde: SpecificAvroSerde<OrderRequested>,
+        orderRejectedSerde: SpecificAvroSerde<OrderRejected>,
+        orderConfirmedSerde: SpecificAvroSerde<OrderConfirmed>,
+        stockSerde: SpecificAvroSerde<Stock>
+    ): Topology {
 
         val rekeyStream = { RekeyStream<String, OrderRequested> { it.productId } }
 
@@ -55,45 +63,54 @@ object OrderProcessingTopology {
             // Use the Processor API to rekey so we do dont create another topic
             .transform(rekeyStream)
             .peek { key, value -> logger.info("Rekeyed to Product Id {} {}", key, value) }
+            // If using processor api rekey
+            // Required to ensure that when running mutli partitions the new key goes to correct partition
+            .repartition(
+                Repartitioned.`as`<String?, OrderRequested?>("rekeyed")
+                    .withKeySerde(keySerde)
+                    .withValueSerde(orderRequestedSerde)
+            )
             .leftJoin(stockTable, { orderRequest: OrderRequested, stock: Stock? ->
-                    if (stock != null && stock.quantityAvailable > 0) {
-                        orderRequest
-                    } else {
-                        OrderRejected(UUID.randomUUID().toString(), orderRequest.id, "Not enough stock")
-                    }
-                }, Joined.with(keySerde, orderRequestedSerde, stockSerde))
-                .peek { key, value -> logger.info("Joined with Stock {} {}", key, value) }
-                .branch(Predicate<String, Any> { key, value -> value is OrderRequested },
-                        Predicate<String, Any> { key, value -> value is OrderRejected })
+                if (stock != null && stock.quantityAvailable > 0) {
+                    orderRequest
+                } else {
+                    OrderRejected(UUID.randomUUID().toString(), orderRequest.id, "Not enough stock")
+                }
+            }, Joined.with(keySerde, orderRequestedSerde, stockSerde))
+            .peek { key, value -> logger.info("Joined with Stock {} {}", key, value) }
+            .branch(Predicate<String, Any> { key, value -> value is OrderRequested },
+                Predicate<String, Any> { key, value -> value is OrderRejected })
 
         // Order Requested Flow
         split[0]
-                .mapValues { value -> value as OrderRequested }
-                .selectKey { _, value -> value.id }
-                .peek { key, orderRequested ->
-                    logger.info("Order Requested {} for customer {}",
-                            key, orderRequested.customerId)
-                }
-                .leftJoin(customerTable,
-                        // Foreign Key join allowed as a GlobalKTable
-                        KeyValueMapper<String, OrderRequested, String> { _: String, orderRequest: OrderRequested -> orderRequest.customerId },
-                        ValueJoiner<OrderRequested, GenericRecord, OrderConfirmed?> { leftValue: OrderRequested, rightValue: GenericRecord? ->
-                            if (rightValue != null) {
-                                OrderConfirmed(leftValue.id, leftValue.productId, leftValue.customerId, true)
-                            } else {
-                                logger.warn("No customer found.")
-                                null
-                            }
-                        })
-                .filter { _, orderConfirmed -> orderConfirmed != null } // TODO is this needed
-                .peek { key, orderConfirmed -> logger.info("Joined with customer {} {}", key, orderConfirmed) }
-                .to(props.orderProcessedTopic, Produced.with(keySerde, orderConfirmedSerde))
+            .mapValues { value -> value as OrderRequested }
+            .selectKey { _, value -> value.id }
+            .peek { key, orderRequested ->
+                logger.info(
+                    "Order Requested {} for customer {}",
+                    key, orderRequested.customerId
+                )
+            }
+            .leftJoin(customerTable,
+                // Foreign Key join allowed as a GlobalKTable
+                KeyValueMapper<String, OrderRequested, String> { _: String, orderRequest: OrderRequested -> orderRequest.customerId },
+                ValueJoiner<OrderRequested, GenericRecord, OrderConfirmed?> { leftValue: OrderRequested, rightValue: GenericRecord? ->
+                    if (rightValue != null) {
+                        OrderConfirmed(leftValue.id, leftValue.productId, leftValue.customerId, true)
+                    } else {
+                        logger.warn("No customer found.")
+                        null
+                    }
+                })
+            .filter { _, orderConfirmed -> orderConfirmed != null } // TODO is this needed
+            .peek { key, orderConfirmed -> logger.info("Joined with customer {} {}", key, orderConfirmed) }
+            .to(props.orderProcessedTopic, Produced.with(keySerde, orderConfirmedSerde))
         // OrderRejected Flow
         split[1]
-                .mapValues { value -> value as OrderRejected }
-                .selectKey { _, value -> value.id }
-                .peek { key, _ -> logger.info("Order Rejected for {}", key) }
-                .to(props.orderRejectedTopic, Produced.with(keySerde, orderRejectedSerde))
+            .mapValues { value -> value as OrderRejected }
+            .selectKey { _, value -> value.id }
+            .peek { key, _ -> logger.info("Order Rejected for {}", key) }
+            .to(props.orderRejectedTopic, Produced.with(keySerde, orderRejectedSerde))
 
         // pass to override for optimization
         return streamsBuilder.build(streamConfig)

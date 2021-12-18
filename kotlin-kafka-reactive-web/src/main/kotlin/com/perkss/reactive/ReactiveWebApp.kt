@@ -13,8 +13,10 @@ class ReactiveWebApp(private val properties: ReactiveKafkaAppProperties) : Comma
     }
 
     override fun run(vararg args: String?) {
-        logger.info("Bootstrap Services is {}, Topic is {}",
-                properties.bootstrapServers, properties.inputTopic)
+        logger.info(
+            "Bootstrap Services is {}, Topic is {}",
+            properties.bootstrapServers, properties.inputTopic
+        )
     }
 }
 

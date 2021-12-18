@@ -21,8 +21,8 @@ class UserHandler(private val appProps: ReactiveKafkaAppProperties) {
 
     suspend fun getUser(request: ServerRequest): ServerResponse {
         return ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyAndAwait(flow { emit(JSONObject.wrap("{\"id\":\"${appProps.inputTopic}\"}")) })
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyAndAwait(flow { emit(JSONObject.wrap("{\"id\":\"${appProps.inputTopic}\"}")) })
     }
 
     suspend fun createUser(request: ServerRequest): ServerResponse {

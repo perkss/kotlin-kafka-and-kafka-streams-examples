@@ -12,10 +12,12 @@ object TestProperties {
 
     private val logger = LoggerFactory.getLogger(TestProperties::class.java)
 
-    fun properties(appId: String,
-                   broker: String,
-                   defaultKeySerde: Class<out Serde<String>> = Serdes.String()::class.java,
-                   defaultValSerde: Class<out Serde<String>> = Serdes.String()::class.java): Properties {
+    fun properties(
+        appId: String,
+        broker: String,
+        defaultKeySerde: Class<out Serde<String>> = Serdes.String()::class.java,
+        defaultValSerde: Class<out Serde<String>> = Serdes.String()::class.java
+    ): Properties {
         val props = Properties()
         props[StreamsConfig.APPLICATION_ID_CONFIG] = appId
         props[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = broker

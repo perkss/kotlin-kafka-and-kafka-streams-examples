@@ -31,7 +31,13 @@ class KafkaReactiveProducer<K, V>(bootstrapServers: String) {
 
     fun send(outboundFlux: Mono<SenderRecord<K, V, String>>): Flux<SenderResult<String>> {
         return sender.send(outboundFlux)
-                .doOnError { e -> logger.error("Send failed", e) }
-                .doOnNext { r -> logger.info("Message Key ${r.correlationMetadata()} send response: ${r.recordMetadata().topic()}") }
+            .doOnError { e -> logger.error("Send failed", e) }
+            .doOnNext { r ->
+                logger.info(
+                    "Message Key ${r.correlationMetadata()} send response: ${
+                        r.recordMetadata().topic()
+                    }"
+                )
+            }
     }
 }

@@ -13,14 +13,15 @@ class AppConfig {
 
     @Bean
     fun reactiveProducer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
-            KafkaReactiveProducer<String, String>(propertiesReactiveKafka.bootstrapServers)
+        KafkaReactiveProducer<String, String>(propertiesReactiveKafka.bootstrapServers)
 
     @Bean
     fun reactiveConsumer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
-            KafkaReactiveConsumer<String, String>(
-                    propertiesReactiveKafka.bootstrapServers,
-                    propertiesReactiveKafka.inputTopic,
-                    propertiesReactiveKafka.consumerGroupId)
+        KafkaReactiveConsumer<String, String>(
+            propertiesReactiveKafka.bootstrapServers,
+            propertiesReactiveKafka.inputTopic,
+            propertiesReactiveKafka.consumerGroupId
+        )
 
 
 }

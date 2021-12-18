@@ -34,16 +34,20 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.KafkaContainer
-import org.testcontainers.containers.wait.Wait
+import org.testcontainers.containers.Network
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
 import java.time.Duration
 import java.util.*
 
 @SpringBootTest
 @Testcontainers
 @ContextConfiguration(initializers = [StreamIntegrationTest.PropertyInit::class])
-internal class StreamIntegrationTest @Autowired constructor(private var appProperties: AppProperties,
-                                                            private var orderProcessingApp: KafkaStreams) {
+internal class StreamIntegrationTest @Autowired constructor(
+    private var appProperties: AppProperties,
+    private var orderProcessingApp: KafkaStreams
+) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(StreamIntegrationTest::class.java)
@@ -53,20 +57,23 @@ internal class StreamIntegrationTest @Autowired constructor(private var appPrope
         @BeforeAll
         @JvmStatic
         internal fun beforeAll() {
-            kafka = KafkaContainer("5.5.0")
+            val kafkaImageName = DockerImageName.parse("confluentinc/cp-kafka:7.0.0")
+            val schemaRegistryImageName = DockerImageName.parse("confluentinc/cp-schema-registry:7.0.0")
+            kafka = KafkaContainer(kafkaImageName)
             kafka.apply {
-                withNetworkAliases("kafka-cluster")
+                withNetwork(Network.newNetwork())
             }
             kafka.start()
             await().until { kafka.isRunning }
-            schemaRegistry = GenericContainer("confluentinc/cp-schema-registry:5.5.0")
+            schemaRegistry = GenericContainer(schemaRegistryImageName)
 
             schemaRegistry.apply {
                 dependsOn(kafka)
                 withNetwork(kafka.network)
-                withNetworkAliases("schema-registry")
+                withExposedPorts(8081)
                 withEnv("SCHEMA_REGISTRY_HOST_NAME", "schema-registry")
-                withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", "kafka-cluster:9092")
+                withEnv("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:8081")
+                withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", "PLAINTEXT://${kafka.networkAliases[0]}:9092")
                 waitingFor(Wait.forLogMessage(".*Server started.*", 1))
                 start()
             }
@@ -79,13 +86,13 @@ internal class StreamIntegrationTest @Autowired constructor(private var appPrope
             //  currently has to be done before spring app starts
             val kafkaAdminClient: AdminClient = KafkaAdminClient.create(props)
             val result: CreateTopicsResult = kafkaAdminClient
-                    .createTopics(
-                            listOf(
-                                "order-request", "order-processed",
-                                "stock", "customer", "order-rejected"
-                            )
-                                .map { name -> NewTopic(name, 12, 1.toShort()) }
-                                    .toList())
+                .createTopics(
+                    listOf(
+                        "order-request", "order-processed",
+                        "stock", "customer", "order-rejected"
+                    )
+                        .map { name -> NewTopic(name, 12, 1.toShort()) }
+                        .toList())
             logger.info("Topics created {}", result.all().get())
 
         }
@@ -95,9 +102,18 @@ internal class StreamIntegrationTest @Autowired constructor(private var appPrope
     fun `Sends a order request that is joined with stock and customer and order confirmed is responded`() {
         val producerProps = Properties().apply {
             put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.bootstrapServers)
-            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer::class.java)
-            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer::class.java)
-            put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}")
+            put(
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringSerializer::class.java
+            )
+            put(
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                io.confluent.kafka.serializers.KafkaAvroSerializer::class.java
+            )
+            put(
+                KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+                "http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}"
+            )
         }
 
         val consumerProps = Properties().apply {
@@ -165,10 +181,15 @@ internal class StreamIntegrationTest @Autowired constructor(private var appPrope
 
     class PropertyInit : ApplicationContextInitializer<ConfigurableApplicationContext> {
         override fun initialize(applicationContext: ConfigurableApplicationContext) {
-            TestPropertySourceUtils.addInlinedPropertiesToEnvironment(applicationContext,
-                    "perkss.kafka.example.bootstrap-servers=${kafka.bootstrapServers}",
-                    "perkss.kafka.example.schema-registry=http://${schemaRegistry.containerIpAddress}:${schemaRegistry.getMappedPort(8081)}",
-                    "perkss.kafka.example.state-dir=${TestUtils.tempDirectory().path}"
+            TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
+                applicationContext,
+                "perkss.kafka.example.bootstrap-servers=${kafka.bootstrapServers}",
+                "perkss.kafka.example.schema-registry=http://${schemaRegistry.containerIpAddress}:${
+                    schemaRegistry.getMappedPort(
+                        8081
+                    )
+                }",
+                "perkss.kafka.example.state-dir=${TestUtils.tempDirectory().path}"
             )
         }
     }

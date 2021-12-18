@@ -10,10 +10,12 @@ import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
 import java.util.*
 
-class KafaReactiveBootstrapConsumer(bootstrapServers: String,
-                                    private val topic: String,
-                                    sslEnabled: Boolean,
-                                    saslEnabled: Boolean) {
+class KafaReactiveBootstrapConsumer(
+    bootstrapServers: String,
+    private val topic: String,
+    sslEnabled: Boolean,
+    saslEnabled: Boolean
+) {
     private var kafkaReceiver: KafkaReceiver<String, String>
 
     init {
@@ -26,7 +28,8 @@ class KafaReactiveBootstrapConsumer(bootstrapServers: String,
         if (sslEnabled) {
             consumerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
             // TODO properly property this could DockerFile it and mount the secrets at runtime
-            consumerProps["ssl.truststore.location"] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.truststore.jks"
+            consumerProps["ssl.truststore.location"] =
+                "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.consumer.truststore.jks"
             consumerProps["ssl.truststore.password"] = "my-test-password"
             consumerProps[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = " "
         }
@@ -42,9 +45,9 @@ class KafaReactiveBootstrapConsumer(bootstrapServers: String,
 
         // TODO then process on the records.
         val consumerOptions = ReceiverOptions.create<String, String>(consumerProps)
-                .commitBatchSize(1)
-                .addAssignListener { partitions -> partitions.forEach { p -> p.seekToBeginning() } }
-                .subscription(Collections.singleton(topic))
+            .commitBatchSize(1)
+            .addAssignListener { partitions -> partitions.forEach { p -> p.seekToBeginning() } }
+            .subscription(Collections.singleton(topic))
         kafkaReceiver = KafkaReceiver.create<String, String>(consumerOptions)
 
 
@@ -78,10 +81,10 @@ class KafaReactiveBootstrapConsumer(bootstrapServers: String,
             fun isPending(): Mono<Boolean> {
                 println("Checking for pending")
                 return Mono.just(endOffsets)
-                        .flatMapIterable { it.entries }
-                        .map { (key, value) -> kafkaReceiver.doOnConsumer { it.position(key) < value } }
-                        .collectList()
-                        .map { it.any() }
+                    .flatMapIterable { it.entries }
+                    .map { (key, value) -> kafkaReceiver.doOnConsumer { it.position(key) < value } }
+                    .collectList()
+                    .map { it.any() }
             }
         }
 
@@ -89,23 +92,23 @@ class KafaReactiveBootstrapConsumer(bootstrapServers: String,
 
 
         kafkaReceiver
-                .receiveAutoAck()
-                .concatMap { r -> r }
-                .doOnNext { r ->
-                    println("Consuming ${r.value()}")
-                }
-                .map { kafkaReceiver.doOnConsumer { consumer -> consumer.endOffsets(consumer.assignment()) } }
-                .flatMap { it }
-                .map { progress.setEndOffset(it) }
-                .map { progress.isPending() }
-                .flatMap {
-                    it
-                }
-                .takeWhile {
-                    println("Pending is $it")
-                    it
-                }
-                .subscribe()
+            .receiveAutoAck()
+            .concatMap { r -> r }
+            .doOnNext { r ->
+                println("Consuming ${r.value()}")
+            }
+            .map { kafkaReceiver.doOnConsumer { consumer -> consumer.endOffsets(consumer.assignment()) } }
+            .flatMap { it }
+            .map { progress.setEndOffset(it) }
+            .map { progress.isPending() }
+            .flatMap {
+                it
+            }
+            .takeWhile {
+                println("Pending is $it")
+                it
+            }
+            .subscribe()
 
 //                .and {
 //                    kafkaReceiver

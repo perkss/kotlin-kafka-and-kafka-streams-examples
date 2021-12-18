@@ -3,6 +3,7 @@ docker build --tag reactive-web-ui:latest .
 ```
 
 Run locally
+
 ```shell script
 docker run -p 8000:80 reactive-web-ui
 ```

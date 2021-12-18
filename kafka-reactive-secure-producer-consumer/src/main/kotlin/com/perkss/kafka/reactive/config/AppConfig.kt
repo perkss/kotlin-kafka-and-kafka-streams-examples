@@ -13,11 +13,17 @@ class AppConfig {
 
     @Bean
     fun reactiveProducer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
-            KafkaReactiveProducer(propertiesReactiveKafka.bootstrapServers, propertiesReactiveKafka.sslEnabled, propertiesReactiveKafka.saslEnabled)
+        KafkaReactiveProducer(
+            propertiesReactiveKafka.bootstrapServers,
+            propertiesReactiveKafka.sslEnabled,
+            propertiesReactiveKafka.saslEnabled
+        )
 
     @Bean
     fun reactiveConsumer(propertiesReactiveKafka: ReactiveKafkaAppProperties) =
-            KafkaReactiveConsumer(propertiesReactiveKafka.bootstrapServers,
-                    propertiesReactiveKafka.inputTopic, propertiesReactiveKafka.sslEnabled, propertiesReactiveKafka.saslEnabled)
+        KafkaReactiveConsumer(
+            propertiesReactiveKafka.bootstrapServers,
+            propertiesReactiveKafka.inputTopic, propertiesReactiveKafka.sslEnabled, propertiesReactiveKafka.saslEnabled
+        )
 
 }

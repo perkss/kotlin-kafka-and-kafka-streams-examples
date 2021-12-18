@@ -11,9 +11,11 @@ import reactor.kafka.sender.SenderOptions
 import reactor.kafka.sender.SenderRecord
 import java.util.*
 
-class KafkaReactiveProducer(bootstrapServers: String,
-                            sslEnabled: Boolean,
-                            saslEnabled: Boolean) {
+class KafkaReactiveProducer(
+    bootstrapServers: String,
+    sslEnabled: Boolean,
+    saslEnabled: Boolean
+) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveProducer::class.java)
@@ -29,7 +31,8 @@ class KafkaReactiveProducer(bootstrapServers: String,
 
         if (sslEnabled) {
             producerProps[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
-            producerProps[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.producer.truststore.jks"
+            producerProps[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] =
+                "/Users/Stuart/Documents/Programming/kotlin/kotlin-kafka-examples/kafka-reactive-secure-producer-consumer/secrets/kafka.producer.truststore.jks"
             producerProps[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = "my-test-password"
             producerProps[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = " "
         }
@@ -49,8 +52,14 @@ class KafkaReactiveProducer(bootstrapServers: String,
 
     fun send(outboundFlux: Publisher<SenderRecord<String, String, String>>) {
         sender.send(outboundFlux)
-                .doOnError { e -> logger.error("Send failed", e) }
-                .doOnNext { r -> logger.info("Message Key {} send response to TLS connected topic: {}", r.correlationMetadata(), r.recordMetadata().topic()) }
-                .subscribe()
+            .doOnError { e -> logger.error("Send failed", e) }
+            .doOnNext { r ->
+                logger.info(
+                    "Message Key {} send response to TLS connected topic: {}",
+                    r.correlationMetadata(),
+                    r.recordMetadata().topic()
+                )
+            }
+            .subscribe()
     }
 }

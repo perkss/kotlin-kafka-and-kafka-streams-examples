@@ -32,7 +32,7 @@ class WebSocketConfig {
         consumerProps[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
         consumerProps[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         val consumerOptions = ReceiverOptions.create<String, String>(consumerProps)
-                .subscription(Collections.singleton(kafkaProperties.inputTopic))
+            .subscription(Collections.singleton(kafkaProperties.inputTopic))
         return KafkaReceiver.create(consumerOptions)
     }
 
@@ -51,7 +51,7 @@ class WebSocketConfig {
     }
 
     @Bean
-    fun userHandler(reactiveKafkaAppProperties: ReactiveKafkaAppProperties): UserHandler
-            = UserHandler(reactiveKafkaAppProperties)
+    fun userHandler(reactiveKafkaAppProperties: ReactiveKafkaAppProperties): UserHandler =
+        UserHandler(reactiveKafkaAppProperties)
 
 }
