@@ -11,7 +11,7 @@ object PostCreatedTimestampExtractor : TimestampExtractor {
     override fun extract(record: ConsumerRecord<Any, Any>, previousTimestamp: Long): Long {
         return if (record.value() is PostCreated) {
             LocalDateTime.parse((record.value() as PostCreated).timestamp)
-                    .toInstant(ZoneOffset.UTC).toEpochMilli()
+                .toInstant(ZoneOffset.UTC).toEpochMilli()
         } else previousTimestamp
     }
 }

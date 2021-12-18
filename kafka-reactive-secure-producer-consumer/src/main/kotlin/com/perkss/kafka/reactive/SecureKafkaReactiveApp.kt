@@ -29,15 +29,15 @@ class SecureKafkaReactiveApp : CommandLineRunner {
         val outputTopic = "uppercase-topic"
 
         consumer.consume()
-                .map {
-                    val producerRecord = ProducerRecord(outputTopic, it.key(), it.value().toUpperCase())
-                    SenderRecord.create(producerRecord, it.key())
-                }
-                .map { producer.send(Mono.just(it)) }
-                .doOnError { logger.error("An error has occurred {}", it) }
-                .subscribe {
-                    logger.info("Subscribing to Consumer and Producer")
-                }
+            .map {
+                val producerRecord = ProducerRecord(outputTopic, it.key(), it.value().toUpperCase())
+                SenderRecord.create(producerRecord, it.key())
+            }
+            .map { producer.send(Mono.just(it)) }
+            .doOnError { logger.error("An error has occurred {}", it) }
+            .subscribe {
+                logger.info("Subscribing to Consumer and Producer")
+            }
     }
 
 }

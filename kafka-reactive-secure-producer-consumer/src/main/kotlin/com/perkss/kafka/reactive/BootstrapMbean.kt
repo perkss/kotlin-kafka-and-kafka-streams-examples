@@ -13,8 +13,10 @@ class BootstrapMbean(private val propertiesReactiveKafka: ReactiveKafkaAppProper
     @ManagedOperation(description = "Bootstrap")
     fun bootstrap() {
 
-        val consumer = KafaReactiveBootstrapConsumer(propertiesReactiveKafka.bootstrapServers,
-                propertiesReactiveKafka.inputTopic, propertiesReactiveKafka.sslEnabled, propertiesReactiveKafka.saslEnabled)
+        val consumer = KafaReactiveBootstrapConsumer(
+            propertiesReactiveKafka.bootstrapServers,
+            propertiesReactiveKafka.inputTopic, propertiesReactiveKafka.sslEnabled, propertiesReactiveKafka.saslEnabled
+        )
         consumer.bootstrap()
 
     }

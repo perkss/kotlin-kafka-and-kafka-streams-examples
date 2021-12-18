@@ -5,9 +5,10 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 
 data class Customer(
-        val id: String,
-        val name: String,
-        val city: String)
+    val id: String,
+    val name: String,
+    val city: String
+)
 
 fun Customer.toGenericRecord(schema: Schema): GenericRecord {
     val record = GenericData.Record(schema)
@@ -18,15 +19,18 @@ fun Customer.toGenericRecord(schema: Schema): GenericRecord {
 }
 
 fun GenericRecord.toCustomer(): Customer {
-    return Customer(get("id") as String,
-            get("name") as String,
-            get("city") as String)
+    return Customer(
+        get("id") as String,
+        get("name") as String,
+        get("city") as String
+    )
 }
 
 // TODO pass file
 object SchemaLoader {
     fun loadSchema() = Schema.Parser()
-            .parse("{\n" +
+        .parse(
+            "{\n" +
                     "  \"namespace\": \"com.perkss\",\n" +
                     "  \"type\": \"record\",\n" +
                     "  \"name\": \"Customer\",\n" +
@@ -53,5 +57,6 @@ object SchemaLoader {
                     "      }\n" +
                     "    }\n" +
                     "  ]\n" +
-                    "}")
+                    "}"
+        )
 }

@@ -50,7 +50,8 @@ internal class OrderProcessingTopologyTest {
         appProperties.schemaRegistry = mockSchemaRegistryUrl
 
         val config = mapOf(
-                KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to mockSchemaRegistryUrl)
+            KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG to mockSchemaRegistryUrl
+        )
 
         val schemaRegistryClient = MockSchemaRegistry.getClientForScope(schemaRegistryScope)
 
@@ -79,36 +80,51 @@ internal class OrderProcessingTopologyTest {
 
         val stock = stock(builder, stockSerde, appProperties)
 
-        val topology = orderProcessing(props, builder, appProperties, customer, stock,
-                keySerde, orderRequestSerde, orderRejectedSerde, orderProcessedSerde, stockSerde)
+        val topology = orderProcessing(
+            props, builder, appProperties, customer, stock,
+            keySerde, orderRequestSerde, orderRejectedSerde, orderProcessedSerde, stockSerde
+        )
 
         val testDriver = TopologyTestDriver(topology, props)
         val orderId = UUID.randomUUID().toString()
         val productId = UUID.randomUUID().toString()
         val customerId = UUID.randomUUID().toString()
-        val stockTopic = testDriver.createInputTopic(appProperties.stockInventory,
-                keySerde.serializer(), stockSerde.serializer())
+        val stockTopic = testDriver.createInputTopic(
+            appProperties.stockInventory,
+            keySerde.serializer(), stockSerde.serializer()
+        )
         stockTopic.pipeInput(productId, Stock(productId, "Shower Curtain", 1))
 
         // Customer is populated with GenericAvroSerde customer details
         val customerTopic: TestInputTopic<String, GenericRecord> =
-                testDriver.createInputTopic(appProperties.customerInformation,
-                        Serdes.String().serializer(), genericAvroSerde.serializer())
+            testDriver.createInputTopic(
+                appProperties.customerInformation,
+                Serdes.String().serializer(), genericAvroSerde.serializer()
+            )
 
         val customerRecord = Customer(customerId, "perkss", "london")
-                .toGenericRecord(SchemaLoader.loadSchema())
+            .toGenericRecord(SchemaLoader.loadSchema())
 
         customerTopic.pipeKeyValueList(
-                Collections.singletonList(
-                        KeyValue.pair(customerRecord.get("id") as String, customerRecord)))
+            Collections.singletonList(
+                KeyValue.pair(customerRecord.get("id") as String, customerRecord)
+            )
+        )
 
-        val inputTopic = testDriver.createInputTopic(appProperties.orderRequest, keySerde.serializer(),
-                orderRequestSerde.serializer())
+        val inputTopic = testDriver.createInputTopic(
+            appProperties.orderRequest, keySerde.serializer(),
+            orderRequestSerde.serializer()
+        )
         inputTopic.pipeInput(orderId, OrderRequested(orderId, productId, customerId))
 
-        val outputTopic = testDriver.createOutputTopic(appProperties.orderProcessedTopic, keySerde.deserializer(),
-                orderProcessedSerde.deserializer())
-        assertThat(outputTopic.readKeyValue(), equalTo(KeyValue(orderId, OrderConfirmed(orderId, productId, customerId, true))))
+        val outputTopic = testDriver.createOutputTopic(
+            appProperties.orderProcessedTopic, keySerde.deserializer(),
+            orderProcessedSerde.deserializer()
+        )
+        assertThat(
+            outputTopic.readKeyValue(),
+            equalTo(KeyValue(orderId, OrderConfirmed(orderId, productId, customerId, true)))
+        )
 
         testDriver.close()
         MockSchemaRegistry.dropScope(schemaRegistryScope)

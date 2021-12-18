@@ -38,31 +38,39 @@ internal class StreamingJoinExamplesTest {
 
     @Test
     fun `Users First name and Last name is joined with an inner streaming join`() {
-        val innerJoinFullNamesTopology = StreamingJoinExamples.innerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
+        val innerJoinFullNamesTopology =
+            StreamingJoinExamples.innerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
         val testDriver = TopologyTestDriver(innerJoinFullNamesTopology, props)
 
-        val firstName = testDriver.createInputTopic(firstNamesTopic,
-                Serdes.String().serializer(), Serdes.String().serializer())
+        val firstName = testDriver.createInputTopic(
+            firstNamesTopic,
+            Serdes.String().serializer(), Serdes.String().serializer()
+        )
 
-        val lastName = testDriver.createInputTopic(lastNamesTopic,
-                Serdes.String().serializer(), Serdes.String().serializer())
+        val lastName = testDriver.createInputTopic(
+            lastNamesTopic,
+            Serdes.String().serializer(), Serdes.String().serializer()
+        )
 
         val startingTime = LocalDateTime.of(
-                LocalDate.of(2020, 1, 1),
-                LocalTime.of(20, 0, 0, 0))
-                .toInstant(ZoneOffset.UTC)
+            LocalDate.of(2020, 1, 1),
+            LocalTime.of(20, 0, 0, 0)
+        )
+            .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window expect the single out of full name
         firstName.pipeInput(aliceId, "Alice", startingTime)
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
 
-        val fullName = testDriver.createOutputTopic(fullNamesTopic, Serdes.String().deserializer(),
-                Serdes.String().deserializer())
+        val fullName = testDriver.createOutputTopic(
+            fullNamesTopic, Serdes.String().deserializer(),
+            Serdes.String().deserializer()
+        )
 
         var results = fullName.readKeyValuesToList()
 
         var expectedValues = mutableListOf<KeyValue<String, String>>(
-                KeyValue(aliceId, "Alice Parker")
+            KeyValue(aliceId, "Alice Parker")
         )
 
         assertEquals(1, results.size)
@@ -100,29 +108,36 @@ internal class StreamingJoinExamplesTest {
         val leftJoinFullNamesTopology = StreamingJoinExamples.leftJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
         val testDriver = TopologyTestDriver(leftJoinFullNamesTopology, props)
 
-        val firstName = testDriver.createInputTopic(firstNamesTopic,
-                Serdes.String().serializer(), Serdes.String().serializer())
+        val firstName = testDriver.createInputTopic(
+            firstNamesTopic,
+            Serdes.String().serializer(), Serdes.String().serializer()
+        )
 
-        val lastName = testDriver.createInputTopic(lastNamesTopic,
-                Serdes.String().serializer(), Serdes.String().serializer())
+        val lastName = testDriver.createInputTopic(
+            lastNamesTopic,
+            Serdes.String().serializer(), Serdes.String().serializer()
+        )
 
         val startingTime = LocalDateTime.of(
-                LocalDate.of(2020, 1, 1),
-                LocalTime.of(20, 0, 0, 0))
-                .toInstant(ZoneOffset.UTC)
+            LocalDate.of(2020, 1, 1),
+            LocalTime.of(20, 0, 0, 0)
+        )
+            .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window
         firstName.pipeInput(aliceId, "Alice", startingTime)
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
 
-        val fullName = testDriver.createOutputTopic(fullNamesTopic, Serdes.String().deserializer(),
-                Serdes.String().deserializer())
+        val fullName = testDriver.createOutputTopic(
+            fullNamesTopic, Serdes.String().deserializer(),
+            Serdes.String().deserializer()
+        )
 
         var results = fullName.readKeyValuesToList()
 
         var expectedValues = mutableListOf<KeyValue<String, String>>(
-                KeyValue(aliceId, "Alice null"),
-                KeyValue(aliceId, "Alice Parker")
+            KeyValue(aliceId, "Alice null"),
+            KeyValue(aliceId, "Alice Parker")
         )
 
         assertEquals(2, results.size)
@@ -138,7 +153,7 @@ internal class StreamingJoinExamplesTest {
         assertEquals(1, results.size)
 
         expectedValues = mutableListOf(
-                KeyValue(billId, "Bill null")
+            KeyValue(billId, "Bill null")
         )
 
         assertTrue { results == expectedValues }
@@ -152,7 +167,7 @@ internal class StreamingJoinExamplesTest {
         results = fullName.readKeyValuesToList()
 
         expectedValues = mutableListOf(
-                KeyValue(jasmineId, "Princess Jasmine")
+            KeyValue(jasmineId, "Princess Jasmine")
         )
 
         assertEquals(1, results.size)
@@ -163,32 +178,40 @@ internal class StreamingJoinExamplesTest {
 
     @Test
     fun `Users First name and Last name is joined with an outer streaming join`() {
-        val outerJoinFullNamesTopology = StreamingJoinExamples.outerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
+        val outerJoinFullNamesTopology =
+            StreamingJoinExamples.outerJoin(firstNamesTopic, lastNamesTopic, fullNamesTopic)
         val testDriver = TopologyTestDriver(outerJoinFullNamesTopology, props)
 
-        val firstName = testDriver.createInputTopic(firstNamesTopic,
-                Serdes.String().serializer(), Serdes.String().serializer())
+        val firstName = testDriver.createInputTopic(
+            firstNamesTopic,
+            Serdes.String().serializer(), Serdes.String().serializer()
+        )
 
-        val lastName = testDriver.createInputTopic(lastNamesTopic,
-                Serdes.String().serializer(), Serdes.String().serializer())
+        val lastName = testDriver.createInputTopic(
+            lastNamesTopic,
+            Serdes.String().serializer(), Serdes.String().serializer()
+        )
 
         val startingTime = LocalDateTime.of(
-                LocalDate.of(2020, 1, 1),
-                LocalTime.of(20, 0, 0, 0))
-                .toInstant(ZoneOffset.UTC)
+            LocalDate.of(2020, 1, 1),
+            LocalTime.of(20, 0, 0, 0)
+        )
+            .toInstant(ZoneOffset.UTC)
 
         // Alice is sent in the same window
         firstName.pipeInput(aliceId, "Alice", startingTime)
         lastName.pipeInput(aliceId, "Parker", startingTime.plusSeconds(7))
 
-        val fullName = testDriver.createOutputTopic(fullNamesTopic, Serdes.String().deserializer(),
-                Serdes.String().deserializer())
+        val fullName = testDriver.createOutputTopic(
+            fullNamesTopic, Serdes.String().deserializer(),
+            Serdes.String().deserializer()
+        )
 
         var results = fullName.readKeyValuesToList()
 
         var expectedValues = mutableListOf<KeyValue<String, String>>(
-                KeyValue(aliceId, "Alice null"),
-                KeyValue(aliceId, "Alice Parker")
+            KeyValue(aliceId, "Alice null"),
+            KeyValue(aliceId, "Alice Parker")
         )
 
         assertEquals(2, results.size)
@@ -205,8 +228,8 @@ internal class StreamingJoinExamplesTest {
         assertEquals(2, results.size)
 
         expectedValues = mutableListOf(
-                KeyValue(billId, "Bill null"),
-                KeyValue(billId, "null Preston")
+            KeyValue(billId, "Bill null"),
+            KeyValue(billId, "null Preston")
         )
 
         assertTrue { results == expectedValues }

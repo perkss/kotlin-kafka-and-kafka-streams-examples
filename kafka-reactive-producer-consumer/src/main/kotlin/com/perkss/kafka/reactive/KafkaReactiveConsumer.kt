@@ -9,10 +9,12 @@ import reactor.kafka.receiver.ReceiverOptions
 import reactor.kafka.receiver.ReceiverRecord
 import java.util.*
 
-class KafkaReactiveConsumer<K, V>(bootstrapServers: String,
-                                  topic: String,
-                                  consumerGroupId: String,
-                                  autoOffsetReset: String = "earliest") {
+class KafkaReactiveConsumer<K, V>(
+    bootstrapServers: String,
+    topic: String,
+    consumerGroupId: String,
+    autoOffsetReset: String = "earliest"
+) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveConsumer::class.java)
@@ -30,12 +32,12 @@ class KafkaReactiveConsumer<K, V>(bootstrapServers: String,
         val consumerOptions = ReceiverOptions.create<K, V>(consumerProps).subscription(Collections.singleton(topic))
 
         receiver = KafkaReceiver.create(consumerOptions)
-                .receive()
-                .map {
-                    logger.info("Received message: $it")
-                    it.receiverOffset().commit()
-                    it
-                }
+            .receive()
+            .map {
+                logger.info("Received message: $it")
+                it.receiverOffset().commit()
+                it
+            }
     }
 
     fun consume() = receiver

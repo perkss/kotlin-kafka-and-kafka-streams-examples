@@ -10,9 +10,11 @@ import reactor.core.publisher.Mono
 import reactor.kafka.sender.SenderRecord
 
 @SpringBootApplication
-class KafkaReactiveApp(private var consumer: KafkaReactiveConsumer<String, String>,
-                       private var producer: KafkaReactiveProducer<String, String>,
-                       private var reactiveKafkaAppProperties: ReactiveKafkaAppProperties) : CommandLineRunner {
+class KafkaReactiveApp(
+    private var consumer: KafkaReactiveConsumer<String, String>,
+    private var producer: KafkaReactiveProducer<String, String>,
+    private var reactiveKafkaAppProperties: ReactiveKafkaAppProperties
+) : CommandLineRunner {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaReactiveApp::class.java)
@@ -25,16 +27,16 @@ class KafkaReactiveApp(private var consumer: KafkaReactiveConsumer<String, Strin
         val outputTopic = reactiveKafkaAppProperties.outputTopic
 
         consumer.consume()
-                .map {
-                    val producerRecord = ProducerRecord(outputTopic, it.key(), it.value().toUpperCase())
-                    logger.info("Building uppercase message. Key: ${it.key()} Message: ${it.value().toUpperCase()}")
-                    SenderRecord.create(producerRecord, it.key())
-                }
-                .map { producer.send(Mono.just(it)).subscribe() }
-                .doOnError { logger.error("An error has occurred $it") }
-                .subscribe {
-                    logger.info("Subscribing to Consumer and Producer")
-                }
+            .map {
+                val producerRecord = ProducerRecord(outputTopic, it.key(), it.value().toUpperCase())
+                logger.info("Building uppercase message. Key: ${it.key()} Message: ${it.value().toUpperCase()}")
+                SenderRecord.create(producerRecord, it.key())
+            }
+            .map { producer.send(Mono.just(it)).subscribe() }
+            .doOnError { logger.error("An error has occurred $it") }
+            .subscribe {
+                logger.info("Subscribing to Consumer and Producer")
+            }
     }
 
 }

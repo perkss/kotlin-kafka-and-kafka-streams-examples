@@ -2,7 +2,6 @@ package com.perkss.reactive
 
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.mock
-import com.perkss.reactive.config.ReactiveKafkaAppProperties
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -31,34 +30,38 @@ class SocialMediaPostsAcceptanceTest {
     @Test
     fun websocketPostsFromKafka() {
         val count = 1
-        val input: Flux<String> = Flux.just( "msg" )
+        val input: Flux<String> = Flux.just("msg")
         val output: ReplayProcessor<Any> = ReplayProcessor.create(count)
 
-        val input2: Flux<String> = Flux.just( "msg" )
+        val input2: Flux<String> = Flux.just("msg")
         val output2: ReplayProcessor<Any> = ReplayProcessor.create(count)
 
         val client = ReactorNettyWebSocketClient()
         val client2 = ReactorNettyWebSocketClient()
 
         client.execute(
-                getUrl("/social-media-posts"))
+            getUrl("/social-media-posts")
+        )
         { session ->
             // Send frame then subscribe.
             session.send(
-                    input.map(session::textMessage))
-                    .thenMany(session.receive().take(1L).map(WebSocketMessage::getPayloadAsText))
-                    .subscribeWith(output)
-                    .then()
+                input.map(session::textMessage)
+            )
+                .thenMany(session.receive().take(1L).map(WebSocketMessage::getPayloadAsText))
+                .subscribeWith(output)
+                .then()
         }.block(Duration.ofSeconds(10L))
 
         client2.execute(
-                getUrl("/social-media-posts"))
+            getUrl("/social-media-posts")
+        )
         { session ->
             session.send(
-                    input2.map(session::textMessage))
-                    .thenMany(session.receive().take(1L).map(WebSocketMessage::getPayloadAsText))
-                    .subscribeWith(output2)
-                    .then()
+                input2.map(session::textMessage)
+            )
+                .thenMany(session.receive().take(1L).map(WebSocketMessage::getPayloadAsText))
+                .subscribeWith(output2)
+                .then()
         }.block(Duration.ofSeconds(10L))
 
         assertEquals(listOf("First websocket post"), output.collectList().block(Duration.ofMillis(5000)))
@@ -74,14 +77,16 @@ class SocialMediaPostsAcceptanceTest {
 
         @Bean
         fun kafkaMessages(): KafkaReceiver<String, String> =
-                mock {
-                    on { receive() } doAnswer {
-                        Flux.just(
-                                ReceiverRecord(
-                                        ConsumerRecord("social-media", 0, 0, "Alice", "First websocket post"),
-                                        mock()))
-                    }
-
+            mock {
+                on { receive() } doAnswer {
+                    Flux.just(
+                        ReceiverRecord(
+                            ConsumerRecord("social-media", 0, 0, "Alice", "First websocket post"),
+                            mock()
+                        )
+                    )
                 }
+
+            }
     }
 }

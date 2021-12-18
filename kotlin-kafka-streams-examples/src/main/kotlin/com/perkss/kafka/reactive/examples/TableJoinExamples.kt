@@ -11,9 +11,11 @@ object TableJoinExamples {
 
     private val logger = LoggerFactory.getLogger(TableJoinExamples::class.java)
 
-    fun innerJoin(firstNamesTopic: String,
-                  lastNamesTopic: String,
-                  fullNameTopic: String): Topology {
+    fun innerJoin(
+        firstNamesTopic: String,
+        lastNamesTopic: String,
+        fullNameTopic: String
+    ): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -26,15 +28,17 @@ object TableJoinExamples {
 
         // stream tables first and last names
         joined
-                .toStream()
-                .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
-                .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
+            .toStream()
+            .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
+            .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
         return builder.build()
     }
 
-    fun leftJoin(firstNamesTopic: String,
-                 lastNamesTopic: String,
-                 fullNameTopic: String): Topology {
+    fun leftJoin(
+        firstNamesTopic: String,
+        lastNamesTopic: String,
+        fullNameTopic: String
+    ): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -47,15 +51,17 @@ object TableJoinExamples {
 
         // stream tables first and last names
         joined
-                .toStream()
-                .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
-                .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
+            .toStream()
+            .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
+            .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
         return builder.build()
     }
 
-    fun outerJoin(firstNamesTopic: String,
-                  lastNamesTopic: String,
-                  fullNameTopic: String): Topology {
+    fun outerJoin(
+        firstNamesTopic: String,
+        lastNamesTopic: String,
+        fullNameTopic: String
+    ): Topology {
         val builder = StreamsBuilder()
 
         // consume the post created
@@ -68,9 +74,9 @@ object TableJoinExamples {
 
         // stream tables first and last names
         joined
-                .toStream()
-                .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
-                .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
+            .toStream()
+            .peek { key, value -> logger.info("Sending on Key {} value {}", key, value) }
+            .to(fullNameTopic, Produced.with(Serdes.String(), Serdes.String()))
         return builder.build()
     }
 }

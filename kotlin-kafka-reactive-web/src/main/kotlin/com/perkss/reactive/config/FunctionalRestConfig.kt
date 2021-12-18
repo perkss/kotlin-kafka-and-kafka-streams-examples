@@ -1,7 +1,6 @@
 package com.perkss.reactive.config
 
 import com.perkss.reactive.UserHandler
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType.APPLICATION_JSON

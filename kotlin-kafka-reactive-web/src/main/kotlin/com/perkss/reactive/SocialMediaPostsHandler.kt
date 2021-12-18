@@ -23,20 +23,20 @@ class SocialMediaPostsHandler(private val kafkaReceiver: KafkaReceiver<String, S
         connections[session.id] = session
 
         val input = session.receive()
-                .delayElements(Duration.ofSeconds(1))
-                .then()
+            .delayElements(Duration.ofSeconds(1))
+            .then()
 
         val output = session.send(
-                kafkaReceiver
-                        .receive()
-                        .doOnNext { logger.info("Sending back message {}", it.value()) }
-                        .map { session.textMessage(it.value()) })
+            kafkaReceiver
+                .receive()
+                .doOnNext { logger.info("Sending back message {}", it.value()) }
+                .map { session.textMessage(it.value()) })
 
         return Mono.zip(input, output)
-                .then()
-                .doFinally {
-                    logger.info("Removing session")
-                    connections.remove(session.id)
-                }
+            .then()
+            .doFinally {
+                logger.info("Removing session")
+                connections.remove(session.id)
+            }
     }
 }
