@@ -28,7 +28,7 @@
         <spring.boot.version>2.5.14</spring.boot.version>
         <kafka.version>3.4.0</kafka.version>
         <kafka-avro-serdes.version>7.3.3</kafka-avro-serdes.version>
-        <avro.version>1.11.1</avro.version>
+        <avro.version>1.11.3</avro.version>
 
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>5.7.0</junit.vintage.version>
