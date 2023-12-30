@@ -19,6 +19,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.GlobalKTable
 import org.apache.kafka.streams.kstream.KTable
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -80,6 +81,7 @@ class AppConfig {
 
     @Bean
     fun orderProcessingTopology(
+        @Qualifier("streamConfig")
         streamConfig: Properties,
         streamsBuilder: StreamsBuilder,
         props: AppProperties,
@@ -117,6 +119,7 @@ class AppConfig {
     @Bean
     fun orderProcessingApp(
         orderProcessingTopology: Topology,
+        @Qualifier("streamConfig")
         streamConfig: Properties
     ) = KafkaStreams(orderProcessingTopology, streamConfig)
 
